@@ -10,6 +10,8 @@ class MainWindow : public QMainWindow
 public:
 	MainWindow(QWidget *parent = Q_NULLPTR);
 
+private slots:
+	void on_pushButton_clicked();
 private:
 	Ui::MainWindowClass ui;
 };
