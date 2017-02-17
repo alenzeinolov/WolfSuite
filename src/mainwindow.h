@@ -17,11 +17,13 @@ public:
 	~MainWindow();
 private slots:
 	void on_pushButton_clicked();
-	void on_pushButton_2_clicked();
+	void on_playButton_clicked();
+	void on_pauseButton_clicked();
 	void updatePlayerUI(QImage image);
+	void updateSlider(int currentFrame);
 private:
 	Ui::MainWindowClass ui;
-	Player* player;
+	wolfsuite::Player* player;
 };
 
 #endif

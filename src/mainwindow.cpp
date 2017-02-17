@@ -3,8 +3,9 @@
 MainWindow::MainWindow(QWidget *parent)
 	: QMainWindow(parent)
 {
-	player = new Player();
+	player = new wolfsuite::Player();
 	QObject::connect(player, SIGNAL(processedImage(QImage)), this, SLOT(updatePlayerUI(QImage)));
+	QObject::connect(player, SIGNAL(currentPosition(QImage)), this, SLOT(updateSlider(QImage)));
 	ui.setupUi(this);
 }
 
@@ -24,24 +25,33 @@ void MainWindow::on_pushButton_clicked()
 			msgBox.setText("The selected video could not be opened!");
 			msgBox.exec();
 		}
+	ui.playButton->setEnabled(true);
+	ui.pauseButton->setEnabled(false);
+	ui.videotimeSlider->setMaximum(1000 / player->getNumFrames());
 }
 
-void MainWindow::on_pushButton_2_clicked()
-{
-	if (player->IsStopped())
-	{
+void MainWindow::on_playButton_clicked() {
+	if (player->IsStopped()) {
 		player->Play();
-		ui.pushButton_2->setText(tr("Stop"));
+		ui.playButton->setEnabled(false);
+		ui.pauseButton->setEnabled(true);
 	}
-	else
-	{
+}
+
+void MainWindow::on_pauseButton_clicked() {
+	if (!player->IsStopped()) {
 		player->Stop();
-		ui.pushButton_2->setText(tr("Play"));
+		ui.playButton->setEnabled(true);
+		ui.pauseButton->setEnabled(false);
 	}
 }
 
 void MainWindow::updatePlayerUI(QImage image)
 {
-	ui.label->setAlignment(Qt::AlignCenter);
-	ui.label->setPixmap(QPixmap::fromImage(image).scaled(ui.label->size(), Qt::KeepAspectRatio, Qt::FastTransformation));
+	ui.videoArea->setAlignment(Qt::AlignCenter);
+	ui.videoArea->setPixmap(QPixmap::fromImage(image).scaled(ui.videoArea->size(), Qt::KeepAspectRatio, Qt::FastTransformation));
+}
+
+void MainWindow::updateSlider(int currentFrame) {
+	ui.videotimeSlider->setSliderPosition(currentFrame);
 }

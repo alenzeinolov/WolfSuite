@@ -121,7 +121,7 @@
         <item>
          <layout class="QVBoxLayout" name="verticalLayout">
           <item>
-           <widget class="QLabel" name="label">
+           <widget class="QLabel" name="videoArea">
             <property name="styleSheet">
              <string notr="true">Background-color: #000;</string>
             </property>
@@ -133,33 +133,47 @@
           <item>
            <layout class="QHBoxLayout" name="playerControls">
             <item>
-             <widget class="QPushButton" name="pushButton_2">
+             <widget class="QPushButton" name="playButton">
               <property name="styleSheet">
                <string notr="true"/>
               </property>
               <property name="text">
-               <string>Play/Pause</string>
+               <string>Play</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QPushButton" name="pushButton_3">
+             <widget class="QPushButton" name="pauseButton">
+              <property name="text">
+               <string>Pause</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="stopButton">
               <property name="text">
                <string>Stop</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QPushButton" name="pushButton_4">
+             <widget class="QPushButton" name="backwardButton">
               <property name="text">
                <string>&lt;&lt;</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QPushButton" name="pushButton_5">
+             <widget class="QPushButton" name="forwardButton">
               <property name="text">
                <string>&gt;&gt;</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSlider" name="videotimeSlider">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
               </property>
              </widget>
             </item>
