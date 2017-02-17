@@ -122,6 +122,9 @@
          <layout class="QVBoxLayout" name="verticalLayout">
           <item>
            <widget class="QLabel" name="label">
+            <property name="styleSheet">
+             <string notr="true">Background-color: #000;</string>
+            </property>
             <property name="text">
              <string>Screen Here</string>
             </property>
@@ -131,6 +134,9 @@
            <layout class="QHBoxLayout" name="playerControls">
             <item>
              <widget class="QPushButton" name="pushButton_2">
+              <property name="styleSheet">
+               <string notr="true"/>
+              </property>
               <property name="text">
                <string>Play/Pause</string>
               </property>
