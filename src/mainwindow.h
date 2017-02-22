@@ -8,7 +8,7 @@
 #include <QTime>
 #include "ui_mainwindow.h"
 
-#include "player.h"
+#include "videoplayer.h"
 
 class MainWindow : public QMainWindow
 {
@@ -30,7 +30,7 @@ private slots:
 	void updatePlayerUI(QImage image);
 private:
 	Ui::MainWindowClass ui;
-	wolfsuite::Player* player;
+	wolfsuite::VideoPlayer* player;
 };
 
 #endif
