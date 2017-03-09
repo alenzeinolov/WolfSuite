@@ -6,9 +6,8 @@
 #include <QMessageBox>
 #include <QStatusBar>
 #include <QTime>
-#include "ui_mainwindow.h"
 
-#include "videoplayer.h"
+#include "ui_mainwindow.h"
 
 class MainWindow : public QMainWindow
 {
@@ -30,7 +29,6 @@ private slots:
 	void updatePlayerUI(QImage image);
 private:
 	Ui::MainWindowClass ui;
-	wolfsuite::VideoPlayer* player;
 };
 
 #endif

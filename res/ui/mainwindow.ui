@@ -36,7 +36,7 @@
        <enum>QFrame::Sunken</enum>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="mainWidget">
        <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -121,14 +121,7 @@
         <item>
          <layout class="QVBoxLayout" name="verticalLayout">
           <item>
-           <widget class="QLabel" name="videoArea">
-            <property name="styleSheet">
-             <string notr="true">Background-color: #000;</string>
-            </property>
-            <property name="text">
-             <string>Screen Here</string>
-            </property>
-           </widget>
+           <widget class="VlcWidgetVideo" name="video" native="true"/>
           </item>
           <item>
            <layout class="QHBoxLayout" name="playerControls">
@@ -238,6 +231,14 @@
   <widget class="QStatusBar" name="statusBar"/>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>VlcWidgetVideo</class>
+   <extends>QWidget</extends>
+   <header>VLCQtWidgets/WidgetVideo.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="mainwindow.qrc"/>
  </resources>

@@ -3,8 +3,6 @@
 MainWindow::MainWindow(QWidget *parent)
 	: QMainWindow(parent)
 {
-	player = new wolfsuite::VideoPlayer();
-	QObject::connect(player, SIGNAL(processedImage(QImage)), this, SLOT(updatePlayerUI(QImage)));
 	ui.setupUi(this);
 
 	ui.playButton->setEnabled(false);
@@ -17,34 +15,12 @@ MainWindow::MainWindow(QWidget *parent)
 	this->statusBar()->showMessage("Loading");
 }
 
-MainWindow::~MainWindow()
-{
-	delete player;
+MainWindow::~MainWindow() {
+
 }
 
-void MainWindow::on_pushButton_clicked()
-{
-	ui.stackedWidget->setCurrentIndex(1);
-	QString filename = QFileDialog::getOpenFileName(this, tr("Open Video"), ".", tr("Video Files (*.mkv *.avi *.mpg *.mp4)"));
-	QFileInfo info = filename;
-	if (!filename.isEmpty()) {
-		if (!player->openFile(filename.toLatin1().data())) {
-			QMessageBox msgBox;
-			msgBox.setText("The selected video could not be opened!");
-			msgBox.exec();
-		} else {
-			this->setWindowTitle(QString(info.fileName()).append(" - WolfSuite"));
+void MainWindow::on_pushButton_clicked() {
 
-			/*ui.playButton->setEnabled(true);
-			ui.pauseButton->setEnabled(false);
-			ui.stopButton->setEnabled(false);
-			ui.videotimeSlider->setEnabled(true);
-			ui.videotimeSlider->setMaximum(player->getNumFrames());
-			ui.maxTime->setText(getFormattedTime(player->getNumFrames() / player->getFrameRate()));*/
-
-			this->statusBar()->showMessage("Ready");
-		}
-	}
 }
 
 void MainWindow::on_playButton_clicked() {
@@ -105,8 +81,8 @@ QString MainWindow::getFormattedTime(int s) {
 void MainWindow::updatePlayerUI(QImage image)
 {
 	if (!image.isNull()) {
-		ui.videoArea->setAlignment(Qt::AlignCenter);
-		ui.videoArea->setPixmap(QPixmap::fromImage(image).scaled(ui.videoArea->size(), Qt::KeepAspectRatio, Qt::FastTransformation));
+		//ui.videoArea->setAlignment(Qt::AlignCenter);
+		//ui.videoArea->setPixmap(QPixmap::fromImage(image).scaled(ui.videoArea->size(), Qt::KeepAspectRatio, Qt::FastTransformation));
 		//ui.videotimeSlider->setValue(player->getCurrentFrame());
 		//ui.currentTime->setText(getFormattedTime(player->getCurrentFrame() / player->getFrameRate()));
 	} else {
