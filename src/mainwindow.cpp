@@ -5,21 +5,15 @@ MainWindow::MainWindow(QWidget *parent)
 {
 	ui.setupUi(this);
 
+	bool fullscreen = false;
+
 	instance = new VlcInstance(VlcCommon::args(), this);
 	player = new VlcMediaPlayer(instance);
-	player->setVideoWidget(ui.video);
 
 	videoControl = new VlcControlVideo(player, NULL, this);
 	audioControl = new VlcControlAudio(player, NULL, this);
 
 	vp = new wolfsuite::VideoParser("C:/Users/Alen/Videos/WSVideos");
-
-	updateVideoList();
-
-	bool fullscreen = false;
-
-	ui.video->setContextMenuPolicy(Qt::CustomContextMenu);
-	connect(ui.video, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showVideoMenu(const QPoint&)));
 
 	mainMenu = new QMenu(this);
 	videoMenu = new QMenu("Video Track", this);
@@ -30,23 +24,7 @@ MainWindow::MainWindow(QWidget *parent)
 	audioGroup = new QActionGroup(audioMenu);
 	subtitlesGroup = new QActionGroup(subtitlesMenu);
 
-	mainMenu->addMenu(videoMenu);
-	mainMenu->addMenu(audioMenu);
-	mainMenu->addMenu(subtitlesMenu);
-
-	connect(videoControl, SIGNAL(actions(QList<QAction *>, const Vlc::ActionsType)), this, SLOT(updateMenus(QList<QAction *>, const Vlc::ActionsType)));
-	connect(audioControl, SIGNAL(actions(QList<QAction *>, const Vlc::ActionsType)), this, SLOT(updateMenus(QList<QAction *>, const Vlc::ActionsType)));
-
-	connect(ui.videoList, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(on_pushButton_clicked(QListWidgetItem*)));
-
-	ui.video->setMediaPlayer(player);
-	ui.volume->setMediaPlayer(player);
-	ui.volume->setVolume(50);
-	ui.seek->setMediaPlayer(player);
-
-	ui.playButton->setEnabled(false);
-	ui.pauseButton->setEnabled(false);
-	ui.stopButton->setEnabled(false);
+	init();
 }
 
 MainWindow::~MainWindow() {
@@ -55,26 +33,48 @@ MainWindow::~MainWindow() {
 	delete audioControl;
 	delete media;
 	delete instance;
+	delete vp;
+	delete videoGroup;
+	delete audioGroup;
+	delete videoMenu;
+	delete audioMenu;
+	delete subtitlesMenu;
+	delete mainMenu;
 }
 
 void MainWindow::init() {
+	player->setVideoWidget(ui.video);
+	ui.video->setContextMenuPolicy(Qt::CustomContextMenu);
 
+	connect(ui.video, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showVideoMenu(const QPoint&)));
+	connect(videoControl, SIGNAL(actions(QList<QAction *>, const Vlc::ActionsType)), this, SLOT(updateMenus(QList<QAction *>, const Vlc::ActionsType)));
+	connect(audioControl, SIGNAL(actions(QList<QAction *>, const Vlc::ActionsType)), this, SLOT(updateMenus(QList<QAction *>, const Vlc::ActionsType)));
+	connect(ui.videoList, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(videoDoubleClicked(QListWidgetItem*)));
+
+	ui.video->setMediaPlayer(player);
+	ui.volume->setMediaPlayer(player);
+	ui.volume->setVolume(50);
+	ui.seek->setMediaPlayer(player);
+
+	mainMenu->addMenu(videoMenu);
+	mainMenu->addMenu(audioMenu);
+	mainMenu->addMenu(subtitlesMenu);
+	
+	ui.playButton->setEnabled(false);
+	ui.pauseButton->setEnabled(false);
+	ui.stopButton->setEnabled(false);
+
+	updateVideoList();
 }
 
-void MainWindow::on_pushButton_clicked(QListWidgetItem* item) {
+void MainWindow::videoDoubleClicked(QListWidgetItem* item) {
 	ui.stackedWidget->setCurrentIndex(1);
-	//QString file = QFileDialog::getOpenFileName(this, tr("Open file"),QDir::homePath(), tr("Multimedia files(*)"));
-	QString file = item->text();
+	QString file = item->statusTip();
 
 	if (file.isEmpty())
 		return;
 
 	media = new VlcMedia(file, true, instance);
-
-	audioControl->setDefaultAudioLanguage("eng");
-	audioControl->reset();
-
-	QMap<QString, int>::Iterator iterator;
 
 	player->open(media);
 	player->stop();
@@ -108,6 +108,7 @@ void MainWindow::on_stopButton_clicked() {
 
 void MainWindow::on_backButton_clicked() {
 	player->stop();
+
 	ui.stackedWidget->setCurrentIndex(0);
 }
 
@@ -147,6 +148,7 @@ void MainWindow::updateMenus(QList<QAction *> list, const Vlc::ActionsType type)
 	}
 }
 
+// TODO - implement full screen
 void MainWindow::keyPressEvent(QKeyEvent *event) {
 	if (ui.stackedWidget->currentIndex() == 1) {
 		switch (event->key()) {
@@ -161,11 +163,12 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
 
 void MainWindow::updateVideoList() {
 	vp->scanFolder();
-	QList<QString>::iterator it;
+	QList<QListWidgetItem*>::iterator it;
 	for (it = vp->videolist.begin(); it != vp->videolist.end(); ++it)
 		ui.videoList->addItem(*it);
 }
 
+// TODO - implement full screen
 void MainWindow::setFullscreen(bool f) {
 	if (f) {
 

@@ -7,6 +7,10 @@
 #include <string>
 
 #include <QList>
+#include <QListWidget>
+#include <QListWidgetItem>
+
+#include "utility.h"
 
 namespace fs = std::experimental::filesystem;
 
@@ -17,11 +21,9 @@ namespace wolfsuite {
 		VideoParser(std::string filename);
 	public:
 		std::string libraryfolder;
-		QList<QString> videolist;
+		QList<QListWidgetItem*> videolist;
 	public:
 		void scanFolder();
-
-		//inline QList<QString> getVideolist() const { return videolist; }
 	};
 
 }
