@@ -5,87 +5,171 @@ MainWindow::MainWindow(QWidget *parent)
 {
 	ui.setupUi(this);
 
+	instance = new VlcInstance(VlcCommon::args(), this);
+	player = new VlcMediaPlayer(instance);
+	player->setVideoWidget(ui.video);
+
+	videoControl = new VlcControlVideo(player, NULL, this);
+	audioControl = new VlcControlAudio(player, NULL, this);
+
+	vp = new wolfsuite::VideoParser("C:/Users/Alen/Videos/WSVideos");
+
+	updateVideoList();
+
+	bool fullscreen = false;
+
+	ui.video->setContextMenuPolicy(Qt::CustomContextMenu);
+	connect(ui.video, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showVideoMenu(const QPoint&)));
+
+	mainMenu = new QMenu(this);
+	videoMenu = new QMenu("Video Track", this);
+	audioMenu = new QMenu("Audio Track", this);
+	subtitlesMenu = new QMenu("Subtitles", this);
+
+	videoGroup = new QActionGroup(videoMenu);
+	audioGroup = new QActionGroup(audioMenu);
+	subtitlesGroup = new QActionGroup(subtitlesMenu);
+
+	mainMenu->addMenu(videoMenu);
+	mainMenu->addMenu(audioMenu);
+	mainMenu->addMenu(subtitlesMenu);
+
+	connect(videoControl, SIGNAL(actions(QList<QAction *>, const Vlc::ActionsType)), this, SLOT(updateMenus(QList<QAction *>, const Vlc::ActionsType)));
+	connect(audioControl, SIGNAL(actions(QList<QAction *>, const Vlc::ActionsType)), this, SLOT(updateMenus(QList<QAction *>, const Vlc::ActionsType)));
+
+	connect(ui.videoList, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(on_pushButton_clicked(QListWidgetItem*)));
+
+	ui.video->setMediaPlayer(player);
+	ui.volume->setMediaPlayer(player);
+	ui.volume->setVolume(50);
+	ui.seek->setMediaPlayer(player);
+
 	ui.playButton->setEnabled(false);
 	ui.pauseButton->setEnabled(false);
 	ui.stopButton->setEnabled(false);
-	ui.videotimeSlider->setEnabled(false);
-	ui.currentTime->setText("00:00:00");
-	ui.maxTime->setText("00:00:00");
-
-	this->statusBar()->showMessage("Loading");
 }
 
 MainWindow::~MainWindow() {
+	delete player;
+	delete videoControl;
+	delete audioControl;
+	delete media;
+	delete instance;
+}
+
+void MainWindow::init() {
 
 }
 
-void MainWindow::on_pushButton_clicked() {
+void MainWindow::on_pushButton_clicked(QListWidgetItem* item) {
+	ui.stackedWidget->setCurrentIndex(1);
+	//QString file = QFileDialog::getOpenFileName(this, tr("Open file"),QDir::homePath(), tr("Multimedia files(*)"));
+	QString file = item->text();
 
+	if (file.isEmpty())
+		return;
+
+	media = new VlcMedia(file, true, instance);
+
+	audioControl->setDefaultAudioLanguage("eng");
+	audioControl->reset();
+
+	QMap<QString, int>::Iterator iterator;
+
+	player->open(media);
+	player->stop();
+
+	ui.playButton->setEnabled(true);
 }
 
 void MainWindow::on_playButton_clicked() {
-	/*if (player->isPaused()) {
-		player->play();
-		ui.playButton->setEnabled(false);
-		ui.pauseButton->setEnabled(true);
-		ui.stopButton->setEnabled(true);
+	ui.playButton->setEnabled(false);
+	ui.pauseButton->setEnabled(true);
+	ui.stopButton->setEnabled(true);
 
-		this->statusBar()->showMessage("Playing");
-	}*/
+	player->play();
 }
 
 void MainWindow::on_pauseButton_clicked() {
-	/*if (!player->isPaused()) {
-		player->pause();
-		ui.playButton->setEnabled(true);
-		ui.pauseButton->setEnabled(false);
-		ui.stopButton->setEnabled(true);
+	ui.playButton->setEnabled(true);
+	ui.pauseButton->setEnabled(false);
+	ui.stopButton->setEnabled(true);
 
-		this->statusBar()->showMessage("Paused");
-	}*/
+	player->pause();
 }
 
 void MainWindow::on_stopButton_clicked() {
-	/*player->stop();
 	ui.playButton->setEnabled(true);
 	ui.pauseButton->setEnabled(false);
 	ui.stopButton->setEnabled(false);
-	ui.currentTime->setText(getFormattedTime(0 / player->getFrameRate()));
-	ui.videotimeSlider->setValue(player->getCurrentFrame());
 
-	this->statusBar()->showMessage("Stopped");*/
+	player->stop();
 }
 
-void MainWindow::on_videotimeSlider_sliderPressed() {
-	/*player->pause();*/
+void MainWindow::on_backButton_clicked() {
+	player->stop();
+	ui.stackedWidget->setCurrentIndex(0);
 }
 
-void MainWindow::on_videotimeSlider_sliderReleased() {
-	/*player->play();*/
+void MainWindow::showVideoMenu(const QPoint& pos) {
+	QPoint globalPos = ui.video->mapToGlobal(pos);
+	mainMenu->exec(globalPos);
 }
 
-void MainWindow::on_videotimeSlider_sliderMoved(int position) {
-	/*player->setCurrentFrame(position);
-	ui.currentTime->setText(getFormattedTime(position / player->getFrameRate()));*/
+void MainWindow::updateMenus(QList<QAction *> list, const Vlc::ActionsType type) {
+	QList<QAction *>::iterator i;
+	for (i = list.begin(); i != list.end(); ++i) {
+		if (type == Vlc::ActionsType::VideoTrack) {
+			QAction *act = *i;
+			if (act->isEnabled())
+				act->setEnabled(true);
+			else
+				act->setEnabled(false);
+			videoGroup->addAction(act);
+			videoMenu->addAction(act);
+		} else if (type == Vlc::ActionsType::AudioTrack) {
+			QAction *act = *i;
+			if (act->isEnabled())
+				act->setEnabled(true);
+			else
+				act->setEnabled(false);
+			audioGroup->addAction(act);
+			audioMenu->addAction(act);
+		} else if (type == Vlc::ActionsType::Subtitles) {
+			QAction *act = *i;
+			if (act->isEnabled())
+				act->setEnabled(true);
+			else
+				act->setEnabled(false);
+			subtitlesGroup->addAction(act);
+			subtitlesMenu->addAction(act);
+		}
+	}
 }
 
-QString MainWindow::getFormattedTime(int s) {
-	int seconds = s % 60;
-	int minutes = ((s / 60) % 60);
-	int hours = (s / (60 * 60)) % 24;
-
-	QTime time(hours, minutes, seconds);
-	return time.toString("hh:mm:ss");
+void MainWindow::keyPressEvent(QKeyEvent *event) {
+	if (ui.stackedWidget->currentIndex() == 1) {
+		switch (event->key()) {
+		case Qt::Key_F12:
+			if (!fullscreen)
+				setFullscreen(true);
+			else
+				setFullscreen(false);
+		}
+	}
 }
 
-void MainWindow::updatePlayerUI(QImage image)
-{
-	if (!image.isNull()) {
-		//ui.videoArea->setAlignment(Qt::AlignCenter);
-		//ui.videoArea->setPixmap(QPixmap::fromImage(image).scaled(ui.videoArea->size(), Qt::KeepAspectRatio, Qt::FastTransformation));
-		//ui.videotimeSlider->setValue(player->getCurrentFrame());
-		//ui.currentTime->setText(getFormattedTime(player->getCurrentFrame() / player->getFrameRate()));
+void MainWindow::updateVideoList() {
+	vp->scanFolder();
+	QList<QString>::iterator it;
+	for (it = vp->videolist.begin(); it != vp->videolist.end(); ++it)
+		ui.videoList->addItem(*it);
+}
+
+void MainWindow::setFullscreen(bool f) {
+	if (f) {
+
 	} else {
-		on_stopButton_clicked();
+
 	}
 }

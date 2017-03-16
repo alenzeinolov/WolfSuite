@@ -88,6 +88,7 @@
     </ClCompile>
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\mainwindow.cpp" />
+    <ClCompile Include="src\videoparser.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="src\mainwindow.h">
@@ -115,6 +116,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GeneratedFiles\ui_mainwindow.h" />
+    <ClInclude Include="src\videoparser.h" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="res\ui\mainwindow.qrc">

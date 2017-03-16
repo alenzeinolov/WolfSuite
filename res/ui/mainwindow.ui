@@ -36,7 +36,7 @@
        <enum>QFrame::Sunken</enum>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="mainWidget">
        <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -110,7 +110,7 @@
            </layout>
           </item>
           <item>
-           <widget class="QListView" name="listView"/>
+           <widget class="QListWidget" name="videoList"/>
           </item>
          </layout>
         </item>
@@ -121,7 +121,11 @@
         <item>
          <layout class="QVBoxLayout" name="verticalLayout">
           <item>
-           <widget class="VlcWidgetVideo" name="video" native="true"/>
+           <widget class="VlcWidgetVideo" name="video" native="true">
+            <property name="styleSheet">
+             <string notr="true">background-color: rgb(0, 0, 0);</string>
+            </property>
+           </widget>
           </item>
           <item>
            <layout class="QHBoxLayout" name="playerControls">
@@ -164,6 +168,9 @@
              </widget>
             </item>
             <item>
+             <widget class="VlcWidgetSeek" name="seek" native="true"/>
+            </item>
+            <item>
              <widget class="QLabel" name="currentTime">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
@@ -183,7 +190,13 @@
              </widget>
             </item>
             <item>
-             <widget class="QSlider" name="videotimeSlider">
+             <widget class="VlcWidgetVolumeSlider" name="volume">
+              <property name="maximumSize">
+               <size>
+                <width>100</width>
+                <height>16777215</height>
+               </size>
+              </property>
               <property name="orientation">
                <enum>Qt::Horizontal</enum>
               </property>
@@ -199,6 +212,19 @@
               </property>
               <property name="text">
                <string/>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="backButton">
+              <property name="maximumSize">
+               <size>
+                <width>25</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>&lt;-</string>
               </property>
              </widget>
             </item>
@@ -228,7 +254,6 @@
    </widget>
    <addaction name="menuFile"/>
   </widget>
-  <widget class="QStatusBar" name="statusBar"/>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
@@ -236,6 +261,17 @@
    <class>VlcWidgetVideo</class>
    <extends>QWidget</extends>
    <header>VLCQtWidgets/WidgetVideo.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>VlcWidgetVolumeSlider</class>
+   <extends>QSlider</extends>
+   <header>VLCQtWidgets/WidgetVolumeSlider.h</header>
+  </customwidget>
+  <customwidget>
+   <class>VlcWidgetSeek</class>
+   <extends>QWidget</extends>
+   <header>VLCQtWidgets/WidgetSeek.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
