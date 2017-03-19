@@ -3,7 +3,6 @@
 
 #include <experimental/filesystem>
 #include <fstream>
-#include <ostream>
 #include <set>
 #include <string>
 
@@ -12,6 +11,8 @@
 #include <QListWidgetItem>
 
 #include "utility.h"
+
+#define VIDEOLIST_FILE_NAME "/videolist"
 
 namespace fs = std::experimental::filesystem;
 
@@ -26,6 +27,9 @@ namespace wolfsuite {
 		QList<QListWidgetItem*> videolist;
 	public:
 		void scanFolder();
+		void writeFile(QStringList list);
+		void updateList();
+		bool videoExists(QString path);
 	};
 
 }

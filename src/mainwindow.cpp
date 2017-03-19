@@ -23,10 +23,6 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow() {
 	delete player;
-	//delete videoControl;
-	//delete audioControl;
-	//delete media;
-	//delete instance;
 	delete vp;
 	delete videoGroup;
 	delete audioGroup;
@@ -121,10 +117,12 @@ void MainWindow::on_addButton_clicked() {
 	QStringList filename = QFileDialog::getOpenFileNames(this, tr("Add videos to library"), "", tr("Video files (*.mkv *.mp4 *.avi)"));
 
 	if (filename.count() == 0)
-		qDebug("WHAT");
+		return;
 
 	wolfsuite::CopyFile* cf = new wolfsuite::CopyFile(filename, QString::fromStdString(LIBRARY_FOLDER) + "/");
-	QProgressDialog* progress = new QProgressDialog("Abort copy", "Abort Copy", 0, cf->copyList.count(), this);
+	QProgressDialog* progress = new QProgressDialog("Abort copy", "Cancel", 0, cf->copyList.count(), this);
+	progress->setWindowModality(Qt::WindowModal);
+	
 	connect(cf, &wolfsuite::CopyFile::finished, progress, &QObject::deleteLater);
 	connect(cf, &wolfsuite::CopyFile::finished, this, &MainWindow::updateVideoList);
 	connect(cf, &wolfsuite::CopyFile::finished, cf, &QObject::deleteLater);
