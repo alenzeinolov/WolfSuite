@@ -4,6 +4,7 @@
 #include <experimental/filesystem>
 #include <fstream>
 #include <ostream>
+#include <set>
 #include <string>
 
 #include <QList>
@@ -20,6 +21,7 @@ namespace wolfsuite {
 	public:
 		VideoParser(std::string filename);
 	public:
+		std::set<std::string> supportedFormats;
 		std::string libraryfolder;
 		QList<QListWidgetItem*> videolist;
 	public:

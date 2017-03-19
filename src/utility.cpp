@@ -2,11 +2,11 @@
 
 namespace wolfsuite {
 
-	std::string eraseStringFromString(std::string s1, std::string s2) {
-		std::string::size_type i = s1.find(s2);
-		if (i != std::string::npos)
-			s1.erase(i, s2.length());
-		return s1;
+	bool copyFile(QString s, QString d) {
+		std::size_t found = s.toStdString().find_last_of("/\\");
+		std::string dS = d.toStdString() + "/" + s.toStdString().substr(found + 1);
+
+		return QFile::copy(s, QString::fromStdString(dS));
 	}
 
 }

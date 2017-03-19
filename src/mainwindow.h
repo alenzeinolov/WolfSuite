@@ -16,9 +16,13 @@
 #include <VLCQtWidgets/ControlVideo.h>
 #include <VLCQtWidgets/ControlAudio.h>
 
+#include "copyfile.h"
+#include "player.h"
 #include "videoparser.h"
 
 #include "ui_mainwindow.h"
+
+#define LIBRARY_FOLDER "C:/Users/Alen/Videos/WSVideos"
 
 class MainWindow : public QMainWindow
 {
@@ -34,6 +38,8 @@ private slots:
 	void on_pauseButton_clicked();
 	void on_stopButton_clicked();
 	void on_backButton_clicked();
+	void on_refreshButton_clicked();
+	void on_addButton_clicked();
 	void videoDoubleClicked(QListWidgetItem* item);
 	
 	void showVideoMenu(const QPoint& pos);
@@ -46,13 +52,7 @@ private:
 	QMenu *mainMenu, *videoMenu, *audioMenu, *subtitlesMenu;
 	QActionGroup *audioGroup, *subtitlesGroup,*videoGroup;
 
-	VlcInstance *instance;
-	VlcMedia *media;
-	VlcMediaPlayer *player;
-
-	VlcControlVideo *videoControl;
-	VlcControlAudio *audioControl;
-
+	wolfsuite::Player *player;
 	wolfsuite::VideoParser *vp;
 private:
 	void init();

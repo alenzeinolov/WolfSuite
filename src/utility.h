@@ -1,11 +1,12 @@
 #ifndef UTILITY_H
 #define UTILITY_H
 
-#include <string>
+#include <QFile>
+#include <QString>
 
 namespace wolfsuite {
 
-	std::string eraseStringFromString(std::string s1, std::string s2);
+	bool copyFile(QString src, QString dest);
 
 }
 
