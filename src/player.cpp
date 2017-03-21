@@ -11,6 +11,7 @@ namespace wolfsuite {
 		audioControl = new VlcControlAudio(player, NULL, this);
 
 		player->open(media);
+
 		player->stop();
 	}
 

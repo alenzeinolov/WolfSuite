@@ -40,32 +40,42 @@ namespace wolfsuite {
 	}
 
 	void VideoParser::updateList() {
+		videolist.clear();
 		std::ifstream file(libraryfolder + VIDEOLIST_FILE_NAME);
 		std::string line;
 		while (std::getline(file, line)) {
 			if (line.compare("[VIDEO]") == 0) {
-				QListWidgetItem* item = new QListWidgetItem();
 				std::getline(file, line);
-				item->setData(Qt::StatusTipRole, QString::fromStdString(line));
+				if (fileExists(QString::fromStdString(line))) {
+					QListWidgetItem* item = new QListWidgetItem();
+					item->setData(Qt::StatusTipRole, QString::fromStdString(line));
 
-				std::getline(file, line);
-				item->setData(Qt::DisplayRole, QString::fromStdString(line));
+					std::getline(file, line);
+					item->setData(Qt::DisplayRole, QString::fromStdString(line));
 
-				std::getline(file, line);
-				item->setData(Qt::UserRole, QString::fromStdString(line));
+					std::getline(file, line);
+					item->setData(Qt::UserRole, QString::fromStdString(line));
 
-				std::getline(file, line);
-				// TODO: VIDEO TAGS
+					std::getline(file, line);
+					// TODO: VIDEO TAGS
 
-				std::getline(file, line);
-				// TODO: PLAYLIST
+					std::getline(file, line);
+					// TODO: PLAYLIST
 
-				std::getline(file, line);
-				// TODO: THUMBNAIL PATH
-				item->setData(Qt::DecorationRole, QPixmap(QString::fromStdString(line)));
-				videolist.append(item);
+					std::getline(file, line);
+					// TODO: THUMBNAIL PATH
+					item->setData(Qt::DecorationRole, QPixmap(QString::fromStdString(line)));
+					videolist.append(item);
+				}
 			}
 		}
+	}
+
+	bool VideoParser::fileExists(QString path) {
+		for (auto& p : fs::directory_iterator(libraryfolder))
+			if (p.path().u8string().compare(path.toStdString()) == 0)
+				return true;
+		return false;
 	}
 
 	bool VideoParser::videoExists(QString path) {

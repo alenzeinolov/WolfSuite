@@ -11,6 +11,7 @@ int main(int argc, char *argv[])
 	VlcCommon::setPluginPath(a.applicationDirPath() + "/plugins");
 
 	MainWindow w;
+	w.setStyleSheet("QMainWindow {background: 'white';}");
 	w.show();
 
 	return a.exec();

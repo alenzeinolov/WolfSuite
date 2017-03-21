@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QtWidgets/QMainWindow>
+#include <QComboBox>
 #include <QFileDialog>
 #include <QKeyEvent>
 #include <QMessageBox>
@@ -18,7 +19,9 @@
 
 #include "copyfile.h"
 #include "player.h"
+#include "removefile.h"
 #include "videoparser.h"
+#include "utility.h"
 
 #include "ui_mainwindow.h"
 
@@ -34,13 +37,15 @@ public:
 protected:
 	void keyPressEvent(QKeyEvent *event);
 private slots:
+	void videoDoubleClicked(QListWidgetItem* item);
 	void on_playButton_clicked();
 	void on_pauseButton_clicked();
 	void on_stopButton_clicked();
 	void on_backButton_clicked();
 	void on_refreshButton_clicked();
 	void on_addButton_clicked();
-	void videoDoubleClicked(QListWidgetItem* item);
+	void on_deleteButton_clicked();
+	void handleSorting(int index);
 	
 	void showVideoMenu(const QPoint& pos);
 	void updateMenus(QList<QAction *> actions, const Vlc::ActionsType type);

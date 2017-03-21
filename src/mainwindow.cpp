@@ -22,7 +22,6 @@ MainWindow::MainWindow(QWidget *parent)
 }
 
 MainWindow::~MainWindow() {
-	delete player;
 	delete vp;
 	delete videoGroup;
 	delete audioGroup;
@@ -30,11 +29,21 @@ MainWindow::~MainWindow() {
 	delete audioMenu;
 	delete subtitlesMenu;
 	delete mainMenu;
+	//delete player;
 }
 
 void MainWindow::init() {
 	connect(ui.video, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showVideoMenu(const QPoint&)));
 	connect(ui.videoList, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(videoDoubleClicked(QListWidgetItem*)));
+	connect(ui.sortingBox, SIGNAL(currentIndexChanged(int)), this, SLOT(handleSorting(int)));
+
+	ui.sortingBox->addItem("Ascending");
+	ui.sortingBox->addItem("Descending");
+	ui.sortingBox->setCurrentIndex(-1);
+
+	videoGroup->setExclusive(true);
+	audioGroup->setExclusive(true);
+	subtitlesGroup->setExclusive(true);
 
 	mainMenu->addMenu(videoMenu);
 	mainMenu->addMenu(audioMenu);
@@ -61,6 +70,7 @@ void MainWindow::videoDoubleClicked(QListWidgetItem* item) {
 
 	connect(player->videoControl, SIGNAL(actions(QList<QAction *>, const Vlc::ActionsType)), this, SLOT(updateMenus(QList<QAction *>, const Vlc::ActionsType)));
 	connect(player->audioControl, SIGNAL(actions(QList<QAction *>, const Vlc::ActionsType)), this, SLOT(updateMenus(QList<QAction *>, const Vlc::ActionsType)));
+	connect(player->player, &VlcMediaPlayer::end, this, &MainWindow::on_stopButton_clicked);
 
 	ui.video->setMediaPlayer(player->player);
 	ui.volume->setMediaPlayer(player->player);
@@ -120,7 +130,11 @@ void MainWindow::on_addButton_clicked() {
 		return;
 
 	wolfsuite::CopyFile* cf = new wolfsuite::CopyFile(filename, QString::fromStdString(LIBRARY_FOLDER) + "/");
-	QProgressDialog* progress = new QProgressDialog("Abort copy", "Cancel", 0, cf->copyList.count(), this);
+	QProgressDialog* progress = new QProgressDialog();
+	progress->setWindowTitle("Adding " + QString::number(cf->copyList.count()) + " files");
+	progress->setMinimum(0);
+	progress->setMaximum(cf->copyList.count());
+	progress->setValue(0);
 	progress->setWindowModality(Qt::WindowModal);
 	
 	connect(cf, &wolfsuite::CopyFile::finished, progress, &QObject::deleteLater);
@@ -128,6 +142,43 @@ void MainWindow::on_addButton_clicked() {
 	connect(cf, &wolfsuite::CopyFile::finished, cf, &QObject::deleteLater);
 	connect(cf, &wolfsuite::CopyFile::signalCopyFile, progress, &QProgressDialog::setValue);
 	cf->start();
+}
+
+void MainWindow::on_deleteButton_clicked() {
+	if (ui.videoList->currentItem() != NULL) {
+		QMessageBox msgBox;
+		msgBox.setWindowTitle("Delete File");
+		msgBox.setText("Are you sure you want to delete " + ui.videoList->currentItem()->data(Qt::DisplayRole).toString() + "?");
+		msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::Cancel);
+		msgBox.setDefaultButton(QMessageBox::Cancel);
+		msgBox.setIcon(QMessageBox::Question);
+		if (msgBox.exec() == QMessageBox::Yes) {
+			wolfsuite::RemoveFile* rf = new wolfsuite::RemoveFile(ui.videoList->currentItem()->data(Qt::StatusTipRole).toString());
+			QMessageBox* loadingBox = new QMessageBox();
+			loadingBox->setWindowTitle("Deleting file");
+			loadingBox->setText("Deleting file " + ui.videoList->currentItem()->data(Qt::DisplayRole).toString());
+			loadingBox->setStandardButtons(0);
+
+			connect(rf, &wolfsuite::RemoveFile::started, loadingBox, &QDialog::exec);
+			connect(rf, &wolfsuite::RemoveFile::finished, loadingBox, &QDialog::accept);
+			connect(rf, &wolfsuite::RemoveFile::finished, this, &MainWindow::updateVideoList);
+			connect(rf, &wolfsuite::RemoveFile::finished, loadingBox, &QObject::deleteLater);
+			connect(rf, &wolfsuite::RemoveFile::finished, rf, &QObject::deleteLater);
+
+			rf->start();
+		}
+	}
+}
+
+void MainWindow::handleSorting(int index) {
+	switch (index) {
+	case 0:
+		ui.videoList->sortItems(Qt::AscendingOrder);
+		break;
+	case 1:
+		ui.videoList->sortItems(Qt::DescendingOrder);
+		break;
+	}
 }
 
 void MainWindow::showVideoMenu(const QPoint& pos) {
@@ -182,20 +233,23 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
 void MainWindow::updateVideoList() {
 	vp->scanFolder();
 	bool toAdd = true;
+	ui.videoList->clear();
 	QList<QListWidgetItem*>::iterator it;
-	if (ui.videoList->count() == 0) {
-		for (it = vp->videolist.begin(); it != vp->videolist.end(); ++it)
-			ui.videoList->addItem(*it);
-	} else {
-		for (it = vp->videolist.begin(); it != vp->videolist.end(); ++it) {
-			for (int i = 0; i < ui.videoList->count(); i++)
-				if (ui.videoList->item(i)->data(Qt::StatusTipRole).compare((*it)->data(Qt::StatusTipRole)) == 0)
-					toAdd = false;
-			if (toAdd)
-				ui.videoList->addItem(*it);
-			toAdd = true;
-		}
-	}
+	for (it = vp->videolist.begin(); it != vp->videolist.end(); ++it)
+		ui.videoList->addItem(*it);
+	//if (ui.videoList->count() == 0) {
+	//	for (it = vp->videolist.begin(); it != vp->videolist.end(); ++it)
+	//		ui.videoList->addItem(*it);
+	//} else {
+	//	for (it = vp->videolist.begin(); it != vp->videolist.end(); ++it) {
+	//		for (int i = 0; i < ui.videoList->count(); i++)
+	//			if (ui.videoList->item(i)->data(Qt::StatusTipRole).compare((*it)->data(Qt::StatusTipRole)) == 0)
+	//				toAdd = false;
+	//		if (toAdd)
+	//			ui.videoList->addItem(*it);
+	//		toAdd = true;
+	//	}
+	//}
 }
 
 // TODO - implement full screen

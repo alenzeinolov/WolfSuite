@@ -1,3 +1,11 @@
+//# VIDEOLIST FILE FORMAT
+//# 0 - FILE PATH
+//# 1 - FILE NAME
+//# 2 - VIDEO INFO
+//# 3 - TAGS
+//# 4 - PLAYLIST(0 IF IN NONE)
+//# 5 - THUMBNAIL PATH
+
 #ifndef VIDEOPARSER_H
 #define VIDEOPARSER_H
 
@@ -29,6 +37,7 @@ namespace wolfsuite {
 		void scanFolder();
 		void writeFile(QStringList list);
 		void updateList();
+		bool fileExists(QString path);
 		bool videoExists(QString path);
 	};
 
