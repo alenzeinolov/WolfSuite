@@ -1,4 +1,18 @@
 <RCC>
-    <qresource prefix="MainWindow">
-    </qresource>
+  <qresource prefix="MainWindow">
+    <file>wolf.png</file>
+    <file>deletefile.png</file>
+    <file>addfile.png</file>
+    <file>refresh.png</file>
+  </qresource>
+  <qresource prefix="Player">
+    <file>volumemute.png</file>
+    <file>volumehigh.png</file>
+    <file>volumelow.png</file>
+    <file>fullscreen.png</file>
+    <file>pause.png</file>
+    <file>play.png</file>
+    <file>return.png</file>
+    <file>stop.png</file>
+  </qresource>
 </RCC>

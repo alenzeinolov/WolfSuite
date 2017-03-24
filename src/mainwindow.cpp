@@ -5,7 +5,8 @@ MainWindow::MainWindow(QWidget *parent)
 {
 	ui.setupUi(this);
 
-	bool fullscreen = false;
+	fullscreen = false;
+	maximized = false;
 
 	vp = new wolfsuite::VideoParser(LIBRARY_FOLDER);
 
@@ -33,9 +34,16 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::init() {
+	ui.video->installEventFilter(this);
+
+	ui.video->setMouseTracking(true);
+
 	connect(ui.video, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showVideoMenu(const QPoint&)));
 	connect(ui.videoList, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(videoDoubleClicked(QListWidgetItem*)));
 	connect(ui.sortingBox, SIGNAL(currentIndexChanged(int)), this, SLOT(handleSorting(int)));
+
+	ui.stackedWidget->setCurrentIndex(0);
+	ui.playerControl->setLayout(ui.playerControls);
 
 	ui.sortingBox->addItem("Ascending");
 	ui.sortingBox->addItem("Descending");
@@ -102,6 +110,28 @@ void MainWindow::on_stopButton_clicked() {
 	ui.stopButton->setEnabled(false);
 
 	player->player->stop();
+}
+
+void MainWindow::on_volumeMuteButton_clicked() {
+	if (ui.volume->mute())
+		ui.volume->setMute(false);
+	else
+		ui.volume->setMute(true);
+}
+
+void MainWindow::on_volumeDownButton_clicked() {
+	ui.volume->volumeDown();
+}
+
+void MainWindow::on_volumeUpButton_clicked() {
+	ui.volume->volumeUp();
+}
+
+void MainWindow::on_fullscreenButton_clicked() {
+	if (!fullscreen)
+		setFullscreen(true);
+	else
+		setFullscreen(false);
 }
 
 void MainWindow::on_backButton_clicked() {
@@ -217,18 +247,76 @@ void MainWindow::updateMenus(QList<QAction *> list, const Vlc::ActionsType type)
 	}
 }
 
-// TODO - implement full screen
+bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
+	if (ui.stackedWidget->currentIndex() == 1) {
+		if (watched == ui.video) {
+			if (event->type() == QEvent::MouseButtonDblClick) {
+				if (!fullscreen)
+					setFullscreen(true);
+				else
+					setFullscreen(false);
+				return true;
+			} else if (event->type() == QEvent::MouseButtonPress) {
+				QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(event);
+				switch (mouseEvent->buttons()) {
+				case Qt::LeftButton:
+					if (!ui.pauseButton->isEnabled())
+						on_playButton_clicked();
+					else if (ui.pauseButton->isEnabled() && ui.stopButton->isEnabled())
+						on_pauseButton_clicked();
+					return true;
+				case Qt::RightButton:
+					showVideoMenu(mouseEvent->pos());
+					return true;
+				}
+			} else if (event->type() == QEvent::MouseMove) {
+				QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(event);
+				QDesktopWidget dw;
+				QRect mainScreenSize = dw.availableGeometry(dw.primaryScreen());
+				if (fullscreen) {
+					if (QCursor::pos().y() > (ui.video->height() - 50)) {
+						ui.playerControl->setVisible(true);
+					} else {
+						ui.playerControl->setVisible(false);
+					}
+				}
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
 void MainWindow::keyPressEvent(QKeyEvent *event) {
 	if (ui.stackedWidget->currentIndex() == 1) {
 		switch (event->key()) {
-		case Qt::Key_F12:
-			if (!fullscreen)
-				setFullscreen(true);
-			else
+		case Qt::Key_Escape:
+			if (fullscreen)
 				setFullscreen(false);
 		}
 	}
 }
+
+//void MainWindow::mousePressEvent(QMouseEvent * event) {
+//	if (ui.stackedWidget->currentIndex() == 1) {
+//		switch (event->buttons()) {
+//		case Qt::LeftButton:
+//			if (!ui.pauseButton->isEnabled())
+//				on_playButton_clicked();
+//			else if (ui.pauseButton->isEnabled() && ui.stopButton->isEnabled())
+//				on_pauseButton_clicked();
+//		}
+//	}
+//}
+
+//void MainWindow::mouseDoubleClickEvent(QMouseEvent * event) {
+//	if (ui.stackedWidget->currentIndex() == 1) {
+//			if (!fullscreen)
+//				setFullscreen(true);
+//			else
+//				setFullscreen(false);
+//	}
+//}
 
 void MainWindow::updateVideoList() {
 	vp->scanFolder();
@@ -237,26 +325,33 @@ void MainWindow::updateVideoList() {
 	QList<QListWidgetItem*>::iterator it;
 	for (it = vp->videolist.begin(); it != vp->videolist.end(); ++it)
 		ui.videoList->addItem(*it);
-	//if (ui.videoList->count() == 0) {
-	//	for (it = vp->videolist.begin(); it != vp->videolist.end(); ++it)
-	//		ui.videoList->addItem(*it);
-	//} else {
-	//	for (it = vp->videolist.begin(); it != vp->videolist.end(); ++it) {
-	//		for (int i = 0; i < ui.videoList->count(); i++)
-	//			if (ui.videoList->item(i)->data(Qt::StatusTipRole).compare((*it)->data(Qt::StatusTipRole)) == 0)
-	//				toAdd = false;
-	//		if (toAdd)
-	//			ui.videoList->addItem(*it);
-	//		toAdd = true;
-	//	}
-	//}
 }
 
-// TODO - implement full screen
 void MainWindow::setFullscreen(bool f) {
 	if (f) {
-
+		fullscreen = true;
+		if (windowState() == Qt::WindowMaximized)
+			maximized = true;
+		else
+			maximized = false;
+		showFullScreen();
+		ui.backButton->hide();
+		ui.playerControl->layout()->setContentsMargins(9, 9, 9, 9);
+		ui.verticalLayout->removeWidget(ui.playerControl);
+		ui.playerWidget->layout()->setContentsMargins(0, 0, 0, 0);
+		ui.playerControl->setAutoFillBackground(true);
+		ui.playerControl->setVisible(false);
 	} else {
-
+		fullscreen = false;
+		if (maximized)
+			showMaximized();
+		else
+			showNormal();
+		ui.backButton->show();
+		ui.verticalLayout->addWidget(ui.playerControl);
+		ui.playerWidget->layout()->setContentsMargins(9, 9, 9, 9);
+		ui.playerControl->layout()->setContentsMargins(0, 9, 0, 0);
+		ui.playerControl->setAutoFillBackground(false);
+		ui.playerControl->setVisible(true);
 	}
 }

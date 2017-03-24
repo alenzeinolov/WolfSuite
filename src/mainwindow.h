@@ -2,9 +2,11 @@
 #define MAINWINDOW_H
 
 #include <QtWidgets/QMainWindow>
+#include <QDesktopWidget>
 #include <QComboBox>
 #include <QFileDialog>
 #include <QKeyEvent>
+#include <QMenu>
 #include <QMessageBox>
 #include <QStatusBar>
 #include <QTime>
@@ -34,13 +36,21 @@ class MainWindow : public QMainWindow
 public:
 	MainWindow(QWidget *parent = Q_NULLPTR);
 	~MainWindow();
+public:
+	bool eventFilter(QObject *watched, QEvent *event);
 protected:
 	void keyPressEvent(QKeyEvent *event);
+	//void mousePressEvent(QMouseEvent * event);
+	//void mouseDoubleClickEvent(QMouseEvent * event);
 private slots:
 	void videoDoubleClicked(QListWidgetItem* item);
 	void on_playButton_clicked();
 	void on_pauseButton_clicked();
 	void on_stopButton_clicked();
+	void on_volumeMuteButton_clicked();
+	void on_volumeDownButton_clicked();
+	void on_volumeUpButton_clicked();
+	void on_fullscreenButton_clicked();
 	void on_backButton_clicked();
 	void on_refreshButton_clicked();
 	void on_addButton_clicked();
@@ -52,10 +62,10 @@ private slots:
 private:
 	Ui::MainWindowClass ui;
 
-	bool fullscreen;
+	bool fullscreen, maximized;
 
 	QMenu *mainMenu, *videoMenu, *audioMenu, *subtitlesMenu;
-	QActionGroup *audioGroup, *subtitlesGroup,*videoGroup;
+	QActionGroup *audioGroup, *subtitlesGroup, *videoGroup;
 
 	wolfsuite::Player *player;
 	wolfsuite::VideoParser *vp;
