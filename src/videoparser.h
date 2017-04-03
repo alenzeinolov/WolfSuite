@@ -18,6 +18,7 @@
 #include <QListWidget>
 #include <QListWidgetItem>
 
+#include "thumbnailcreator.h"
 #include "utility.h"
 
 #define VIDEOLIST_FILE_NAME "/videolist"

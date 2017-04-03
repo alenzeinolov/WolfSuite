@@ -20,7 +20,11 @@ namespace wolfsuite {
 				list.append("JUST SOME VIDEO YOLO");
 				list.append("NONE");
 				list.append("0");
-				list.append("res/images/videoIcon.png");
+				ThumbnailCreator tc;
+				if (tc.generateThumbnail(p.path().u8string()))
+					list.append(QString::fromStdString(libraryfolder) + "/thumbnails/" + QString::fromStdString(p.path().u8string().erase(0, libraryfolder.length() + 1)) + ".jpeg");
+				else
+					list.append(QString::fromStdString("res/images/videoIcon.png"));
 				writeFile(list);
 			}
 		}
@@ -63,8 +67,8 @@ namespace wolfsuite {
 					// TODO: PLAYLIST
 
 					std::getline(file, line);
-					// TODO: THUMBNAIL PATH
-					item->setData(Qt::DecorationRole, QPixmap(QString::fromStdString(line)));
+					item->setIcon(QPixmap(QString::fromStdString(line)));
+					//item->setData(Qt::DecorationRole, QPixmap(QString::fromStdString(line)));
 					videolist.append(item);
 				}
 			}

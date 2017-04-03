@@ -38,6 +38,8 @@ void MainWindow::init() {
 
 	ui.video->setMouseTracking(true);
 
+	ui.videoList->setIconSize(QSize(160, 90));
+
 	connect(ui.video, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showVideoMenu(const QPoint&)));
 	connect(ui.videoList, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(videoDoubleClicked(QListWidgetItem*)));
 	connect(ui.sortingBox, SIGNAL(currentIndexChanged(int)), this, SLOT(handleSorting(int)));
