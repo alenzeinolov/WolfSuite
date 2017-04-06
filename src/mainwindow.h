@@ -5,6 +5,7 @@
 #include <QDesktopWidget>
 #include <QComboBox>
 #include <QFileDialog>
+#include <QInputDialog>
 #include <QKeyEvent>
 #include <QMenu>
 #include <QMessageBox>
@@ -19,6 +20,7 @@
 #include <VLCQtWidgets/ControlVideo.h>
 #include <VLCQtWidgets/ControlAudio.h>
 
+#include "config.h"
 #include "copyfile.h"
 #include "editinfo.h"
 #include "player.h"
@@ -28,8 +30,6 @@
 #include "utility.h"
 
 #include "ui_mainwindow.h"
-
-#define LIBRARY_FOLDER "C:/Users/Alen/Videos/WSVideos"
 
 class MainWindow : public QMainWindow
 {
@@ -56,7 +56,10 @@ private slots:
 	void on_addButton_clicked();
 	void on_deleteButton_clicked();
 	void on_infoButton_clicked();
-	void handleSorting(int index);
+	void on_addPlaylistButton_clicked();
+	void on_deletePlaylistButton_clicked();
+	void handleSorting();
+	void playlistChanged(QListWidgetItem * item);
 	
 	void showVideoMenu(const QPoint& pos);
 	void updateMenus(QList<QAction *> actions, const Vlc::ActionsType type);
@@ -68,11 +71,17 @@ private:
 	QMenu *mainMenu, *videoMenu, *audioMenu, *subtitlesMenu;
 	QActionGroup *audioGroup, *subtitlesGroup, *videoGroup;
 
+	QListWidgetItem *allItem;
+	QString *currentItem;
+
+	wolfsuite::Config *config;
 	wolfsuite::Player *player;
 	wolfsuite::VideoParser *vp;
 private:
 	void init();
+	void setupConfig();
 	void updateVideoList();
+	void updatePlaylistList();
 	void setFullscreen(bool f);
 };
 

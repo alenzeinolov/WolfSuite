@@ -32,15 +32,17 @@ namespace wolfsuite {
 	class VideoParser {
 	public:
 		VideoParser(std::string filename);
-	public:
+	private:
 		std::set<std::string> supportedFormats;
+	public:
 		std::string libraryfolder;
 		QList<QListWidgetItem*> videolist;
 	public:
-		void scanFolder();
+		void scanFolder(QString playlist);
 		void writeFile(QStringList list);
-		void updateList();
-		void editVideo(QString path, QString name, QString info, QString tags);
+		void updateList(QString playlist);
+		QList<QListWidgetItem*> getPlaylist(QString playlist);
+		void editVideo(QString path, QString name, QString info, QString tags, QString playlist);
 		void deleteVideo(QString path);
 		bool fileExists(QString path);
 		bool videoExists(QString path);

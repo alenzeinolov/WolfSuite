@@ -67,8 +67,14 @@ namespace wolfsuite {
 					sws_scale(swsContext, frame->data, frame->linesize, 0, codecContext->height, frameRGB->data, frameRGB->linesize);
 					for (int y = 0; y < codecContext->height; ++y)
 						memcpy(image.scanLine(y), frameRGB->data[0] + y * frameRGB->linesize[0], frameRGB->linesize[0]);
-					std::string libraryfolder = "C:/Users/Alen/Videos/WSVideos/";
-					std::string thumbnailfolder = "C:/Users/Alen/Videos/WSVideos/thumbnails/";
+
+					Config config;
+					config.loadConfig();
+
+					std::string libraryfolder = config.config.find("libraryfolder")->second;
+					std::string thumbnailfolder = config.config.find("libraryfolder")->second + "/thumbnails/";
+					if (!fs::exists(thumbnailfolder))
+						fs::create_directory(thumbnailfolder);
 					image.save(QString::fromStdString(thumbnailfolder) + QString::fromStdString(filename.erase(0, libraryfolder.length())) + ".jpeg");
 					break;
 				}

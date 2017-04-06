@@ -8,6 +8,7 @@
 int main(int argc, char *argv[])
 {
 	QApplication a(argc, argv);
+	Q_INIT_RESOURCE(mainwindow);
 	VlcCommon::setPluginPath(a.applicationDirPath() + "/plugins");
 
 	MainWindow w;

@@ -13,7 +13,7 @@ namespace wolfsuite {
 		supportedFormats.insert("avi");
 	}
 
-	void VideoParser::scanFolder() {
+	void VideoParser::scanFolder(QString playlist) {
 		for (auto& p : fs::directory_iterator(libraryfolder)) {
 			if (supportedFormats.find(p.path().u8string().substr(p.path().u8string().length() - 3)) != supportedFormats.end()) {
 				QStringList list;
@@ -26,11 +26,11 @@ namespace wolfsuite {
 				if (tc.generateThumbnail(p.path().u8string()))
 					list.append(QString::fromStdString(libraryfolder) + "/thumbnails/" + QString::fromStdString(p.path().u8string().erase(0, libraryfolder.length() + 1)) + ".jpeg");
 				else
-					list.append(QString::fromStdString("res/images/videoIcon.png"));
+					list.append(QString::fromStdString(":/MainWindow/videoIcon.png"));
 				writeFile(list);
 			}
 		}
-		updateList();
+		updateList(playlist);
 	}
 
 	void VideoParser::writeFile(QStringList list) {
@@ -46,7 +46,7 @@ namespace wolfsuite {
 		}
 	}
 
-	void VideoParser::updateList() {
+	void VideoParser::updateList(QString playlist) {
 		videolist.clear();
 		std::ifstream file(libraryfolder + VIDEOLIST_FILE_NAME);
 		std::list<std::map<std::string, std::string>> list;
@@ -69,32 +69,41 @@ namespace wolfsuite {
 			QListWidgetItem* item = new QListWidgetItem();
 			std::map<std::string, std::string>::iterator it;
 
-			it = i->find("video");
-			item->setData(Qt::StatusTipRole, QString::fromStdString(it->second));
-
-			it = i->find("name");
-			item->setData(Qt::DisplayRole, QString::fromStdString(it->second));
-
-			it = i->find("info");
-			item->setData(Qt::UserRole, QString::fromStdString(it->second));
-
-			it = i->find("tags");
-			if (QString::fromStdString(it->second).compare("0") != 0)
-				item->setData(Qt::ToolTipRole, QString::fromStdString(it->second));
-			else
-				item->setData(Qt::ToolTipRole, QString::fromStdString(""));
-
 			it = i->find("playlist");
-			item->setData(Qt::WhatsThisRole, QString::fromStdString(it->second));
+			if (playlist.compare("Your Library") == 0 || it->second.compare(playlist.toStdString()) == 0) {
+				it = i->find("video");
+				item->setData(Qt::StatusTipRole, QString::fromStdString(it->second));
 
-			it = i->find("thumbnail");
-			item->setIcon(QPixmap(QString::fromStdString(it->second)));
+				it = i->find("name");
+				item->setData(Qt::DisplayRole, QString::fromStdString(it->second));
 
-			videolist.append(item);
+				it = i->find("info");
+				item->setData(Qt::UserRole, QString::fromStdString(it->second));
+
+				it = i->find("tags");
+				if (QString::fromStdString(it->second).compare("0") != 0)
+					item->setData(Qt::ToolTipRole, QString::fromStdString(it->second));
+				else
+					item->setData(Qt::ToolTipRole, QString::fromStdString(""));
+
+				it = i->find("playlist");
+				item->setData(Qt::WhatsThisRole, QString::fromStdString(it->second));
+
+				it = i->find("thumbnail");
+				item->setIcon(QPixmap(QString::fromStdString(it->second)));
+
+				videolist.append(item);
+			}
 		}
 	}
 
-	void VideoParser::editVideo(QString path, QString name, QString info, QString tags) {
+	QList<QListWidgetItem*> VideoParser::getPlaylist(QString playlist) {
+		QList<QListWidgetItem*> list;
+
+		return QList<QListWidgetItem*>();
+	}
+
+	void VideoParser::editVideo(QString path, QString name, QString info, QString tags, QString playlist) {
 		std::ifstream ifile(libraryfolder + VIDEOLIST_FILE_NAME);
 		std::ofstream ofile(libraryfolder + VIDEOLIST_FILE_NAME + "_TMP", std::ios::app);
 
@@ -114,7 +123,11 @@ namespace wolfsuite {
 					ofile << "tags:" << tags.toStdString() << std::endl;
 				else
 					ofile << "tags:" << "0" << std::endl;
-				for (int i = 0; i < 4; ++i)
+				if (playlist.compare("None") != 0)
+					ofile << "playlist:" << playlist.toStdString() << std::endl;
+				else
+					ofile << "playlist:" << "0" << std::endl;
+				for (int i = 0; i < 5; ++i)
 					std::getline(ifile, line);
 				ofile << line << std::endl;
 				std::getline(ifile, line);
@@ -129,7 +142,6 @@ namespace wolfsuite {
 
 		QFile::remove(QString::fromStdString(libraryfolder + VIDEOLIST_FILE_NAME));
 		std::rename(std::string(libraryfolder + VIDEOLIST_FILE_NAME + "_TMP").c_str(), std::string(libraryfolder + VIDEOLIST_FILE_NAME).c_str());
-		updateList();
 	}
 
 	void VideoParser::deleteVideo(QString path) {
@@ -151,7 +163,6 @@ namespace wolfsuite {
 
 		QFile::remove(QString::fromStdString(libraryfolder + VIDEOLIST_FILE_NAME));
 		std::rename(std::string(libraryfolder + VIDEOLIST_FILE_NAME + "_TMP").c_str(), std::string(libraryfolder + VIDEOLIST_FILE_NAME).c_str());
-		updateList();
 	}
 
 	bool VideoParser::fileExists(QString path) {

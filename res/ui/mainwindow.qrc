@@ -1,5 +1,14 @@
 <RCC>
   <qresource prefix="MainWindow">
+    <file>ascSort.png</file>
+    <file>desSort.png</file>
+    <file>alphaAsc.png</file>
+    <file>alphaDes.png</file>
+    <file>addPlus.png</file>
+    <file>deleteMinus.png</file>
+    <file>videoicon.png</file>
+    <file>folder.png</file>
+    <file>playlist.png</file>
     <file>editfile.png</file>
     <file>wolf.png</file>
     <file>deletefile.png</file>

@@ -1,12 +1,15 @@
 #include "mainwindow.h"
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
+	config = new wolfsuite::Config();
+	setupConfig();
+
 	ui.setupUi(this);
 
 	fullscreen = false;
 	maximized = false;
 
-	vp = new wolfsuite::VideoParser(LIBRARY_FOLDER);
+	vp = new wolfsuite::VideoParser(config->config.find("libraryfolder")->second);
 
 	mainMenu = new QMenu(this);
 	videoMenu = new QMenu("Video Track", this);
@@ -16,6 +19,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	videoGroup = new QActionGroup(videoMenu);
 	audioGroup = new QActionGroup(audioMenu);
 	subtitlesGroup = new QActionGroup(subtitlesMenu);
+
+	allItem = new QListWidgetItem();
+	currentItem = new QString(qvariant_cast<QString>(allItem->data(Qt::DisplayRole)));
 
 	init();
 }
@@ -38,18 +44,23 @@ void MainWindow::init() {
 
 	ui.video->setMouseTracking(true);
 
+	ui.playlistList->setFrameShape(QFrame::NoFrame);
 	ui.videoList->setIconSize(QSize(160, 90));
 
 	connect(ui.video, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showVideoMenu(const QPoint&)));
 	connect(ui.videoList, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(videoDoubleClicked(QListWidgetItem*)));
-	connect(ui.sortingBox, SIGNAL(currentIndexChanged(int)), this, SLOT(handleSorting(int)));
+	connect(ui.playlistList, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(playlistChanged(QListWidgetItem*)));
+	connect(ui.sortingBox, SIGNAL(currentIndexChanged(int)), this, SLOT(handleSorting()));
 
 	ui.stackedWidget->setCurrentIndex(0);
 	ui.playerControl->setLayout(ui.playerControls);
 
 	ui.sortingBox->addItem("Ascending");
 	ui.sortingBox->addItem("Descending");
-	ui.sortingBox->setCurrentIndex(-1);
+	ui.sortingBox->setIconSize(QSize(20, 20));
+	ui.sortingBox->setItemIcon(0, QPixmap(":/MainWindow/ascSort.png"));
+	ui.sortingBox->setItemIcon(1, QPixmap(":/MainWindow/desSort.png"));
+	ui.sortingBox->setCurrentIndex(0);
 
 	videoGroup->setExclusive(true);
 	audioGroup->setExclusive(true);
@@ -58,12 +69,32 @@ void MainWindow::init() {
 	mainMenu->addMenu(videoMenu);
 	mainMenu->addMenu(audioMenu);
 	mainMenu->addMenu(subtitlesMenu);
+
+	allItem->setData(Qt::DisplayRole, "Your Library");
+	allItem->setIcon(QPixmap(":/MainWindow/folder.png"));
+	currentItem = new QString(qvariant_cast<QString>(allItem->data(Qt::DisplayRole)));
+	ui.playlistList->addItem(allItem);
+	ui.playlistList->item(0)->setSelected(true);
 	
 	ui.playButton->setEnabled(false);
 	ui.pauseButton->setEnabled(false);
 	ui.stopButton->setEnabled(false);
+	ui.deletePlaylistButton->setEnabled(false);
 
 	updateVideoList();
+	updatePlaylistList();
+}
+
+void MainWindow::setupConfig() {
+	if (!config->configExists()) {
+		QFileDialog *dialog = new QFileDialog();
+		dialog->setFileMode(QFileDialog::Directory);
+		QString dir = dialog->getExistingDirectory();
+		config->createConfig(dir.toStdString());
+		delete dialog;
+	} else {
+		config->loadConfig();
+	}
 }
 
 void MainWindow::videoDoubleClicked(QListWidgetItem* item) {
@@ -164,7 +195,7 @@ void MainWindow::on_addButton_clicked() {
 	if (filename.count() == 0)
 		return;
 
-	wolfsuite::CopyFile* cf = new wolfsuite::CopyFile(filename, QString::fromStdString(LIBRARY_FOLDER) + "/");
+	wolfsuite::CopyFile* cf = new wolfsuite::CopyFile(filename, QString::fromStdString(config->config.find("libraryfolder")->second) + "/");
 	QProgressDialog* progress = new QProgressDialog();
 	progress->setWindowTitle("Adding " + QString::number(cf->copyList.count()) + " files");
 	progress->setMinimum(0);
@@ -174,6 +205,7 @@ void MainWindow::on_addButton_clicked() {
 	
 	connect(cf, &wolfsuite::CopyFile::finished, progress, &QObject::deleteLater);
 	connect(cf, &wolfsuite::CopyFile::finished, this, &MainWindow::updateVideoList);
+	connect(cf, &wolfsuite::CopyFile::finished, this, &MainWindow::handleSorting);
 	connect(cf, &wolfsuite::CopyFile::finished, cf, &QObject::deleteLater);
 	connect(cf, &wolfsuite::CopyFile::signalCopyFile, progress, &QProgressDialog::setValue);
 	cf->start();
@@ -197,6 +229,7 @@ void MainWindow::on_deleteButton_clicked() {
 			connect(rf, &wolfsuite::RemoveFile::started, loadingBox, &QDialog::exec);
 			connect(rf, &wolfsuite::RemoveFile::finished, loadingBox, &QDialog::accept);
 			connect(rf, &wolfsuite::RemoveFile::finished, this, &MainWindow::updateVideoList);
+			connect(rf, &wolfsuite::RemoveFile::finished, this, &MainWindow::handleSorting);
 			connect(rf, &wolfsuite::RemoveFile::finished, loadingBox, &QObject::deleteLater);
 			connect(rf, &wolfsuite::RemoveFile::finished, rf, &QObject::deleteLater);
 
@@ -215,11 +248,35 @@ void MainWindow::on_infoButton_clicked() {
 		info->setPalette(palette);
 		info->show();
 		connect(info, &EditInfo::destroyed, this, &MainWindow::updateVideoList);
+		connect(info, &EditInfo::destroyed, this, &MainWindow::handleSorting);
 	}
 }
 
-void MainWindow::handleSorting(int index) {
-	switch (index) {
+void MainWindow::on_addPlaylistButton_clicked() {
+	QString playlist = QInputDialog::getText(this, "Add Playlist", "Name new playlist:");
+	if (!playlist.isEmpty()) {
+		config->addPlaylist(playlist);
+		updatePlaylistList();
+	}
+}
+
+void MainWindow::on_deletePlaylistButton_clicked() {
+	if (ui.playlistList->currentItem() != NULL) {
+		QMessageBox msgBox;
+		msgBox.setWindowTitle("Delete File");
+		msgBox.setText("Are you sure you want to delete " + ui.playlistList->currentItem()->data(Qt::DisplayRole).toString() + "?");
+		msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::Cancel);
+		msgBox.setDefaultButton(QMessageBox::Cancel);
+		msgBox.setIcon(QMessageBox::Question);
+		if (msgBox.exec() == QMessageBox::Yes)
+			config->deletePlaylist(qvariant_cast<QString>(ui.playlistList->currentItem()->data(Qt::DisplayRole)));
+		updatePlaylistList();
+		updateVideoList();
+	}
+}
+
+void MainWindow::handleSorting() {
+	switch (ui.sortingBox->currentIndex()) {
 	case 0:
 		ui.videoList->sortItems(Qt::AscendingOrder);
 		break;
@@ -227,6 +284,15 @@ void MainWindow::handleSorting(int index) {
 		ui.videoList->sortItems(Qt::DescendingOrder);
 		break;
 	}
+}
+
+void MainWindow::playlistChanged(QListWidgetItem* item) {
+	currentItem = new QString(qvariant_cast<QString>(item->data(Qt::DisplayRole)));
+	if (currentItem->compare("Your Library") == 0)
+		ui.deletePlaylistButton->setEnabled(false);
+	else
+		ui.deletePlaylistButton->setEnabled(true);
+	updateVideoList();
 }
 
 void MainWindow::showVideoMenu(const QPoint& pos) {
@@ -316,12 +382,30 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
 }
 
 void MainWindow::updateVideoList() {
-	vp->scanFolder();
-	bool toAdd = true;
+	vp->scanFolder(qvariant_cast<QString>(ui.playlistList->selectedItems().at(0)->data(Qt::DisplayRole)));
 	ui.videoList->clear();
 	QList<QListWidgetItem*>::iterator it;
 	for (it = vp->videolist.begin(); it != vp->videolist.end(); ++it)
 		ui.videoList->addItem(*it);
+	handleSorting();
+}
+
+void MainWindow::updatePlaylistList() {
+	config->loadPlaylist();
+	ui.playlistList->clear();
+	allItem = new QListWidgetItem();
+	allItem->setData(Qt::DisplayRole, "Your Library");
+	allItem->setIcon(QPixmap(":/MainWindow/folder.png"));
+	ui.playlistList->addItem(allItem);
+	QList<QListWidgetItem*>::iterator it;
+	for (it = config->playlists.begin(); it != config->playlists.end(); ++it)
+		ui.playlistList->addItem(*it);
+	QList<QListWidgetItem*> items = ui.playlistList->findItems(*currentItem, Qt::MatchExactly);
+	if (items.size() > 0) {
+		ui.playlistList->setItemSelected(items.at(0), true);
+	} else {
+		ui.playlistList->item(0)->setSelected(true);
+	}
 }
 
 void MainWindow::setFullscreen(bool f) {

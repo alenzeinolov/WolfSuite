@@ -2,6 +2,7 @@
 
 #include <QWidget>
 
+#include "config.h"
 #include "videoparser.h"
 
 #include "ui_editinfo.h"
@@ -21,5 +22,6 @@ private:
 	Ui::EditInfo ui;
 
 	QListWidgetItem *item;
+	wolfsuite::Config *config;
 	wolfsuite::VideoParser *vp;
 };

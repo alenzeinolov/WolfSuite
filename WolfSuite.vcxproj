@@ -110,6 +110,7 @@
     <ClCompile Include="GeneratedFiles\Release\moc_videoplayer.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="src\config.cpp" />
     <ClCompile Include="src\copyfile.cpp" />
     <ClCompile Include="src\editinfo.cpp" />
     <ClCompile Include="src\main.cpp" />
@@ -192,6 +193,7 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DWIN64 -DQT_NO_DEBUG -DNDEBUG -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtWidgets" "-I.\src"</Command>
     </CustomBuild>
+    <ClInclude Include="src\config.h" />
     <ClInclude Include="src\thumbnailcreator.h" />
     <ClInclude Include="src\utility.h" />
     <CustomBuild Include="src\videolistdelegate.h">

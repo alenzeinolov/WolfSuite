@@ -2,9 +2,11 @@
 
 EditInfo::EditInfo(QListWidgetItem *item, QWidget *parent) : QWidget(parent) {
 	ui.setupUi(this);
-
 	this->item = item;
-	vp = new wolfsuite::VideoParser("C:/Users/Alen/Videos/WSVideos");
+	config = new wolfsuite::Config();
+	config->loadConfig();
+	config->loadPlaylist();
+	vp = new wolfsuite::VideoParser(config->config.find("libraryfolder")->second);
 
 	init();
 }
@@ -23,8 +25,18 @@ void EditInfo::init() {
 	ui.nameEdit->setText(qvariant_cast<QString>(item->data(Qt::DisplayRole)));
 	ui.infoEdit->setText(qvariant_cast<QString>(item->data(Qt::UserRole)));
 	ui.tagsEdit->setText(qvariant_cast<QString>(item->data(Qt::ToolTipRole)));
+	ui.playlistEdit->addItem("None");
+	for (int i = 0; i < config->playlists.length(); ++i)
+		ui.playlistEdit->addItem(qvariant_cast<QString>(config->playlists.at(i)->data(Qt::DisplayRole)));
+	if (qvariant_cast<QString>(item->data(Qt::ToolTipRole)).compare("0") == 0) {
+		ui.playlistEdit->setCurrentIndex(0);
+	} else {
+		for (int i = 0; i < ui.playlistEdit->count(); ++i)
+			if (qvariant_cast<QString>(item->data(Qt::WhatsThisRole)).compare(ui.playlistEdit->itemText(i)) == 0)
+				ui.playlistEdit->setCurrentIndex(i);
+	}
 }
 
 void EditInfo::on_editButton_clicked() {
-	vp->editVideo(qvariant_cast<QString>(item->data(Qt::StatusTipRole)), ui.nameEdit->text(), ui.infoEdit->toPlainText(), ui.tagsEdit->text());
+	vp->editVideo(qvariant_cast<QString>(item->data(Qt::StatusTipRole)), ui.nameEdit->text(), ui.infoEdit->toPlainText(), ui.tagsEdit->text(), ui.playlistEdit->currentText());
 }

@@ -14,6 +14,8 @@ extern "C" {
 	#include <libswscale/swscale.h>
 }
 
+#include <config.h>
+
 namespace wolfsuite {
 
 	class ThumbnailCreator {
