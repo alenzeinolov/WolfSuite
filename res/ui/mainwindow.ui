@@ -98,6 +98,9 @@
                    <height>30</height>
                   </size>
                  </property>
+                 <property name="toolTip">
+                  <string>Refresh</string>
+                 </property>
                  <property name="text">
                   <string/>
                  </property>
@@ -120,6 +123,9 @@
                    <width>30</width>
                    <height>30</height>
                   </size>
+                 </property>
+                 <property name="toolTip">
+                  <string>Add Video</string>
                  </property>
                  <property name="text">
                   <string/>
@@ -144,12 +150,41 @@
                    <height>30</height>
                   </size>
                  </property>
+                 <property name="toolTip">
+                  <string>Delete Video</string>
+                 </property>
                  <property name="text">
                   <string/>
                  </property>
                  <property name="icon">
                   <iconset resource="mainwindow.qrc">
                    <normaloff>:/MainWindow/deletefile.png</normaloff>:/MainWindow/deletefile.png</iconset>
+                 </property>
+                 <property name="iconSize">
+                  <size>
+                   <width>20</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="infoButton">
+                 <property name="maximumSize">
+                  <size>
+                   <width>30</width>
+                   <height>30</height>
+                  </size>
+                 </property>
+                 <property name="toolTip">
+                  <string>Edit Info</string>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="mainwindow.qrc">
+                   <normaloff>:/MainWindow/editfile.png</normaloff>:/MainWindow/editfile.png</iconset>
                  </property>
                  <property name="iconSize">
                   <size>
@@ -169,7 +204,11 @@
               </property>
               <layout class="QHBoxLayout" name="horizontalLayout_4">
                <item>
-                <widget class="QComboBox" name="sortingBox"/>
+                <widget class="QComboBox" name="sortingBox">
+                 <property name="toolTip">
+                  <string>Sorting</string>
+                 </property>
+                </widget>
                </item>
               </layout>
              </widget>

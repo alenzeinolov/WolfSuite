@@ -1,5 +1,7 @@
 #include "videoparser.h"
 
+#include <iostream>
+
 namespace wolfsuite {
 
 	VideoParser::VideoParser(std::string filename) {
@@ -17,8 +19,8 @@ namespace wolfsuite {
 				QStringList list;
 				list.append(QString::fromStdString(p.path().u8string()));
 				list.append(QString::fromStdString(p.path().u8string().erase(0, libraryfolder.length() + 1)));
-				list.append("JUST SOME VIDEO YOLO");
-				list.append("NONE");
+				list.append("0");
+				list.append("0");
 				list.append("0");
 				ThumbnailCreator tc;
 				if (tc.generateThumbnail(p.path().u8string()))
@@ -35,44 +37,121 @@ namespace wolfsuite {
 		if (!videoExists(list.at(0))) {
 			std::ofstream file;
 			file.open(libraryfolder + VIDEOLIST_FILE_NAME, std::ios::app);
-			file << "[VIDEO]" << std::endl;
-			for (int i = 0; i < list.count(); ++i) {
-				file << list.at(i).toStdString() << std::endl;
-			}
-			file << std::endl;
+			file << "video:" << list.at(0).toStdString() << std::endl;
+			file << "name:" << list.at(1).toStdString() << std::endl;
+			file << "info:" << list.at(2).toStdString() << std::endl;
+			file << "tags:" << list.at(3).toStdString() << std::endl;
+			file << "playlist:" << list.at(4).toStdString() << std::endl;
+			file << "thumbnail:" << list.at(5).toStdString() << std::endl;
 		}
 	}
 
 	void VideoParser::updateList() {
 		videolist.clear();
 		std::ifstream file(libraryfolder + VIDEOLIST_FILE_NAME);
+		std::list<std::map<std::string, std::string>> list;
 		std::string line;
+
+		int counter = 0;
+		std::map<std::string, std::string> map;
 		while (std::getline(file, line)) {
-			if (line.compare("[VIDEO]") == 0) {
-				std::getline(file, line);
-				if (fileExists(QString::fromStdString(line))) {
-					QListWidgetItem* item = new QListWidgetItem();
-					item->setData(Qt::StatusTipRole, QString::fromStdString(line));
-
-					std::getline(file, line);
-					item->setData(Qt::DisplayRole, QString::fromStdString(line));
-
-					std::getline(file, line);
-					item->setData(Qt::UserRole, QString::fromStdString(line));
-
-					std::getline(file, line);
-					// TODO: VIDEO TAGS
-
-					std::getline(file, line);
-					// TODO: PLAYLIST
-
-					std::getline(file, line);
-					item->setIcon(QPixmap(QString::fromStdString(line)));
-					//item->setData(Qt::DecorationRole, QPixmap(QString::fromStdString(line)));
-					videolist.append(item);
-				}
+			counter++;
+			int pos = line.find(':');
+			map[line.substr(0, pos)] = line.substr(pos + 1);
+			if (counter == 6) {
+				counter = 0;
+				list.push_back(map);
+				map.clear();
 			}
 		}
+
+		for (auto i = list.begin(); i != list.end(); ++i) {
+			QListWidgetItem* item = new QListWidgetItem();
+			std::map<std::string, std::string>::iterator it;
+
+			it = i->find("video");
+			item->setData(Qt::StatusTipRole, QString::fromStdString(it->second));
+
+			it = i->find("name");
+			item->setData(Qt::DisplayRole, QString::fromStdString(it->second));
+
+			it = i->find("info");
+			item->setData(Qt::UserRole, QString::fromStdString(it->second));
+
+			it = i->find("tags");
+			if (QString::fromStdString(it->second).compare("0") != 0)
+				item->setData(Qt::ToolTipRole, QString::fromStdString(it->second));
+			else
+				item->setData(Qt::ToolTipRole, QString::fromStdString(""));
+
+			it = i->find("playlist");
+			item->setData(Qt::WhatsThisRole, QString::fromStdString(it->second));
+
+			it = i->find("thumbnail");
+			item->setIcon(QPixmap(QString::fromStdString(it->second)));
+
+			videolist.append(item);
+		}
+	}
+
+	void VideoParser::editVideo(QString path, QString name, QString info, QString tags) {
+		std::ifstream ifile(libraryfolder + VIDEOLIST_FILE_NAME);
+		std::ofstream ofile(libraryfolder + VIDEOLIST_FILE_NAME + "_TMP", std::ios::app);
+
+		std::string line;
+		while (std::getline(ifile, line)) {
+			if (line.compare("video:" + path.toStdString()) == 0) {
+				ofile << line << std::endl;
+				if (name.compare("") != 0)
+					ofile << "name:" << name.toStdString() << std::endl;
+				else
+					ofile << "name:" << "No name" << std::endl;
+				if (info.compare("") != 0)
+					ofile << "info:" << info.toStdString() << std::endl;
+				else
+					ofile << "info:" << "No info" << std::endl;
+				if (tags.compare("") != 0)
+					ofile << "tags:" << tags.toStdString() << std::endl;
+				else
+					ofile << "tags:" << "0" << std::endl;
+				for (int i = 0; i < 4; ++i)
+					std::getline(ifile, line);
+				ofile << line << std::endl;
+				std::getline(ifile, line);
+				ofile << line << std::endl;
+			} else {
+				ofile << line << std::endl;
+			}
+		}
+
+		ifile.close();
+		ofile.close();
+
+		QFile::remove(QString::fromStdString(libraryfolder + VIDEOLIST_FILE_NAME));
+		std::rename(std::string(libraryfolder + VIDEOLIST_FILE_NAME + "_TMP").c_str(), std::string(libraryfolder + VIDEOLIST_FILE_NAME).c_str());
+		updateList();
+	}
+
+	void VideoParser::deleteVideo(QString path) {
+		std::ifstream ifile(libraryfolder + VIDEOLIST_FILE_NAME);
+		std::ofstream ofile(libraryfolder + VIDEOLIST_FILE_NAME + "_TMP", std::ios::app);
+
+		std::string line;
+		while (std::getline(ifile, line)) {
+			if (line.compare("video:" + path.toStdString()) == 0) {
+				for (int i = 0; i < 5; ++i)
+					std::getline(ifile, line);
+			} else {
+				ofile << line << std::endl;
+			}
+		}
+
+		ifile.close();
+		ofile.close();
+
+		QFile::remove(QString::fromStdString(libraryfolder + VIDEOLIST_FILE_NAME));
+		std::rename(std::string(libraryfolder + VIDEOLIST_FILE_NAME + "_TMP").c_str(), std::string(libraryfolder + VIDEOLIST_FILE_NAME).c_str());
+		updateList();
 	}
 
 	bool VideoParser::fileExists(QString path) {
@@ -86,7 +165,7 @@ namespace wolfsuite {
 		std::ifstream file(libraryfolder + VIDEOLIST_FILE_NAME);
 		std::string line;
 		while (std::getline(file, line))
-			if (line.compare(path.toStdString()) == 0)
+			if (line.compare("video:" + path.toStdString()) == 0)
 				return true;
 		return false;
 	}

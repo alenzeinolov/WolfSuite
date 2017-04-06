@@ -1,8 +1,6 @@
 #include "mainwindow.h"
 
-MainWindow::MainWindow(QWidget *parent)
-	: QMainWindow(parent)
-{
+MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	ui.setupUi(this);
 
 	fullscreen = false;
@@ -35,6 +33,8 @@ MainWindow::~MainWindow() {
 
 void MainWindow::init() {
 	ui.video->installEventFilter(this);
+	
+	ui.videoList->setItemDelegate(new VideoListDelegate());
 
 	ui.video->setMouseTracking(true);
 
@@ -68,6 +68,8 @@ void MainWindow::init() {
 
 void MainWindow::videoDoubleClicked(QListWidgetItem* item) {
 	ui.stackedWidget->setCurrentIndex(1);
+	setWindowTitle(qvariant_cast<QString>(item->data(Qt::DisplayRole)));
+
 	QString file = item->statusTip();
 
 	if (file.isEmpty())
@@ -148,6 +150,7 @@ void MainWindow::on_backButton_clicked() {
 	player = NULL;
 
 	ui.stackedWidget->setCurrentIndex(0);
+	setWindowTitle("WolfSuite");
 }
 
 void MainWindow::on_refreshButton_clicked() {
@@ -197,8 +200,21 @@ void MainWindow::on_deleteButton_clicked() {
 			connect(rf, &wolfsuite::RemoveFile::finished, loadingBox, &QObject::deleteLater);
 			connect(rf, &wolfsuite::RemoveFile::finished, rf, &QObject::deleteLater);
 
+			vp->deleteVideo(ui.videoList->currentItem()->data(Qt::StatusTipRole).toString());
 			rf->start();
 		}
+	}
+}
+
+void MainWindow::on_infoButton_clicked() {
+	if (ui.videoList->currentItem() != NULL) {
+		EditInfo *info = new EditInfo(ui.videoList->currentItem());
+		QPalette palette;
+		palette.setColor(QPalette::Background, Qt::white);
+		info->setAutoFillBackground(true);
+		info->setPalette(palette);
+		info->show();
+		connect(info, &EditInfo::destroyed, this, &MainWindow::updateVideoList);
 	}
 }
 
@@ -298,27 +314,6 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
 		}
 	}
 }
-
-//void MainWindow::mousePressEvent(QMouseEvent * event) {
-//	if (ui.stackedWidget->currentIndex() == 1) {
-//		switch (event->buttons()) {
-//		case Qt::LeftButton:
-//			if (!ui.pauseButton->isEnabled())
-//				on_playButton_clicked();
-//			else if (ui.pauseButton->isEnabled() && ui.stopButton->isEnabled())
-//				on_pauseButton_clicked();
-//		}
-//	}
-//}
-
-//void MainWindow::mouseDoubleClickEvent(QMouseEvent * event) {
-//	if (ui.stackedWidget->currentIndex() == 1) {
-//			if (!fullscreen)
-//				setFullscreen(true);
-//			else
-//				setFullscreen(false);
-//	}
-//}
 
 void MainWindow::updateVideoList() {
 	vp->scanFolder();

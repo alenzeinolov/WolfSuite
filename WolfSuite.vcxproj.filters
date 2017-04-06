@@ -58,9 +58,6 @@
     <ClCompile Include="GeneratedFiles\Release\moc_videoplayer.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="src\videoparser.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\utility.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -97,6 +94,18 @@
     <ClCompile Include="GeneratedFiles\Release\moc_videolistdelegate.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
+    <ClCompile Include="src\videoparser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_editinfo.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_editinfo.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="src\editinfo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="src\mainwindow.h">
@@ -120,19 +129,28 @@
     <CustomBuild Include="src\videolistdelegate.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
+    <CustomBuild Include="src\editinfo.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="res\ui\editinfo.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GeneratedFiles\ui_mainwindow.h">
       <Filter>Generated Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\videoparser.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\utility.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\thumbnailcreator.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\videoparser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_editinfo.h">
+      <Filter>Generated Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

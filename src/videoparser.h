@@ -11,6 +11,8 @@
 
 #include <experimental/filesystem>
 #include <fstream>
+#include <list>
+#include <map>
 #include <set>
 #include <string>
 
@@ -38,6 +40,8 @@ namespace wolfsuite {
 		void scanFolder();
 		void writeFile(QStringList list);
 		void updateList();
+		void editVideo(QString path, QString name, QString info, QString tags);
+		void deleteVideo(QString path);
 		bool fileExists(QString path);
 		bool videoExists(QString path);
 	};

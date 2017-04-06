@@ -20,9 +20,11 @@
 #include <VLCQtWidgets/ControlAudio.h>
 
 #include "copyfile.h"
+#include "editinfo.h"
 #include "player.h"
 #include "removefile.h"
 #include "videoparser.h"
+#include "videolistdelegate.h"
 #include "utility.h"
 
 #include "ui_mainwindow.h"
@@ -40,8 +42,6 @@ public:
 	bool eventFilter(QObject *watched, QEvent *event);
 protected:
 	void keyPressEvent(QKeyEvent *event);
-	//void mousePressEvent(QMouseEvent * event);
-	//void mouseDoubleClickEvent(QMouseEvent * event);
 private slots:
 	void videoDoubleClicked(QListWidgetItem* item);
 	void on_playButton_clicked();
@@ -55,6 +55,7 @@ private slots:
 	void on_refreshButton_clicked();
 	void on_addButton_clicked();
 	void on_deleteButton_clicked();
+	void on_infoButton_clicked();
 	void handleSorting(int index);
 	
 	void showVideoMenu(const QPoint& pos);
