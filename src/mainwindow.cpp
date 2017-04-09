@@ -51,6 +51,7 @@ void MainWindow::init() {
 	connect(ui.videoList, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(videoDoubleClicked(QListWidgetItem*)));
 	connect(ui.playlistList, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(playlistChanged(QListWidgetItem*)));
 	connect(ui.sortingBox, SIGNAL(currentIndexChanged(int)), this, SLOT(handleSorting()));
+	connect(ui.searchEdit, SIGNAL(textEdited(QString)), this, SLOT(handleSearch(QString)));
 
 	ui.stackedWidget->setCurrentIndex(0);
 	ui.playerControl->setLayout(ui.playerControls);
@@ -185,11 +186,12 @@ void MainWindow::on_backButton_clicked() {
 }
 
 void MainWindow::on_refreshButton_clicked() {
+	ui.searchEdit->clear();
+	vp->scanFolder(qvariant_cast<QString>(ui.playlistList->selectedItems().at(0)->data(Qt::DisplayRole)));
 	updateVideoList();
 }
 
 void MainWindow::on_addButton_clicked() {
-	// TODO: IMPROVE ADDBUTTON VERY DODGY
 	QStringList filename = QFileDialog::getOpenFileNames(this, tr("Add videos to library"), "", tr("Video files (*.mkv *.mp4 *.avi)"));
 
 	if (filename.count() == 0)
@@ -204,7 +206,7 @@ void MainWindow::on_addButton_clicked() {
 	progress->setWindowModality(Qt::WindowModal);
 	
 	connect(cf, &wolfsuite::CopyFile::finished, progress, &QObject::deleteLater);
-	connect(cf, &wolfsuite::CopyFile::finished, this, &MainWindow::updateVideoList);
+	connect(cf, &wolfsuite::CopyFile::finished, this, &MainWindow::on_refreshButton_clicked);
 	connect(cf, &wolfsuite::CopyFile::finished, this, &MainWindow::handleSorting);
 	connect(cf, &wolfsuite::CopyFile::finished, cf, &QObject::deleteLater);
 	connect(cf, &wolfsuite::CopyFile::signalCopyFile, progress, &QProgressDialog::setValue);
@@ -228,8 +230,7 @@ void MainWindow::on_deleteButton_clicked() {
 
 			connect(rf, &wolfsuite::RemoveFile::started, loadingBox, &QDialog::exec);
 			connect(rf, &wolfsuite::RemoveFile::finished, loadingBox, &QDialog::accept);
-			connect(rf, &wolfsuite::RemoveFile::finished, this, &MainWindow::updateVideoList);
-			connect(rf, &wolfsuite::RemoveFile::finished, this, &MainWindow::handleSorting);
+			connect(rf, &wolfsuite::RemoveFile::finished, this, &MainWindow::on_refreshButton_clicked);
 			connect(rf, &wolfsuite::RemoveFile::finished, loadingBox, &QObject::deleteLater);
 			connect(rf, &wolfsuite::RemoveFile::finished, rf, &QObject::deleteLater);
 
@@ -284,6 +285,16 @@ void MainWindow::handleSorting() {
 		ui.videoList->sortItems(Qt::DescendingOrder);
 		break;
 	}
+}
+
+void MainWindow::handleSearch(QString searchString) {
+	ui.playlistList->item(0)->setSelected(true);
+	vp->searchList(searchString);
+	ui.videoList->clear();
+	QList<QListWidgetItem*>::iterator it;
+	for (it = vp->searchlist.begin(); it != vp->searchlist.end(); ++it)
+		ui.videoList->addItem(*it);
+	handleSorting();
 }
 
 void MainWindow::playlistChanged(QListWidgetItem* item) {
@@ -382,7 +393,8 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
 }
 
 void MainWindow::updateVideoList() {
-	vp->scanFolder(qvariant_cast<QString>(ui.playlistList->selectedItems().at(0)->data(Qt::DisplayRole)));
+	ui.searchEdit->clear();
+	vp->updateList(qvariant_cast<QString>(ui.playlistList->selectedItems().at(0)->data(Qt::DisplayRole)));
 	ui.videoList->clear();
 	QList<QListWidgetItem*>::iterator it;
 	for (it = vp->videolist.begin(); it != vp->videolist.end(); ++it)

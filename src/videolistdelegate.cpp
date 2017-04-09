@@ -48,7 +48,10 @@ void VideoListDelegate::paint(QPainter *painter, const QStyleOptionViewItem &opt
 		painter->drawText(nameRect, name);
 
 		painter->setFont(subFont);
-		painter->drawText(infoRect, info);
+		if (info.compare("0"))
+			painter->drawText(infoRect, info);
+		else
+			painter->drawText(infoRect, "No info");
 	} else {
 		QStyledItemDelegate::paint(painter, option, index);
 	}

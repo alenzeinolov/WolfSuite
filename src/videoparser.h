@@ -37,11 +37,12 @@ namespace wolfsuite {
 	public:
 		std::string libraryfolder;
 		QList<QListWidgetItem*> videolist;
+		QList<QListWidgetItem*> searchlist;
 	public:
 		void scanFolder(QString playlist);
 		void writeFile(QStringList list);
 		void updateList(QString playlist);
-		QList<QListWidgetItem*> getPlaylist(QString playlist);
+		void searchList(QString searchString);
 		void editVideo(QString path, QString name, QString info, QString tags, QString playlist);
 		void deleteVideo(QString path);
 		bool fileExists(QString path);

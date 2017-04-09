@@ -26,7 +26,7 @@ namespace wolfsuite {
 				if (tc.generateThumbnail(p.path().u8string()))
 					list.append(QString::fromStdString(libraryfolder) + "/thumbnails/" + QString::fromStdString(p.path().u8string().erase(0, libraryfolder.length() + 1)) + ".jpeg");
 				else
-					list.append(QString::fromStdString(":/MainWindow/videoIcon.png"));
+					list.append(QString::fromStdString(":/MainWindow/videoicon.png"));
 				writeFile(list);
 			}
 		}
@@ -97,10 +97,72 @@ namespace wolfsuite {
 		}
 	}
 
-	QList<QListWidgetItem*> VideoParser::getPlaylist(QString playlist) {
-		QList<QListWidgetItem*> list;
+	void VideoParser::searchList(QString searchString) {
+		searchlist.clear();
+		std::ifstream file(libraryfolder + VIDEOLIST_FILE_NAME);
+		std::list<std::map<std::string, std::string>> list;
+		std::string line;
 
-		return QList<QListWidgetItem*>();
+		int counter = 0;
+		std::map<std::string, std::string> map;
+		while (std::getline(file, line)) {
+			counter++;
+			int pos = line.find(':');
+			map[line.substr(0, pos)] = line.substr(pos + 1);
+			if (counter == 6) {
+				counter = 0;
+				list.push_back(map);
+				map.clear();
+			}
+		}
+
+		for (auto i = list.begin(); i != list.end(); ++i) {
+			QListWidgetItem* item = new QListWidgetItem();
+			std::map<std::string, std::string>::iterator it;
+			bool found = false;
+			std::string name, info, playlist, tags;
+
+			it = i->find("name");
+			name = it->second;
+			std::transform(name.begin(), name.end(), name.begin(), ::tolower);
+			found ? true : found = name.find(searchString.toLower().toStdString()) != std::string::npos;
+			it = i->find("info");
+			info = it->second;
+			std::transform(info.begin(), info.end(), info.begin(), ::tolower);
+			found ? true : found = info.find(searchString.toLower().toStdString()) != std::string::npos;
+			it = i->find("tags");
+			tags = it->second;
+			std::transform(tags.begin(), tags.end(), tags.begin(), ::tolower);
+			found ? true : found = playlist.find(searchString.toLower().toStdString()) != std::string::npos;
+			it = i->find("playlist");
+			playlist = it->second;
+			std::transform(playlist.begin(), playlist.end(), playlist.begin(), ::tolower);
+			found ? true : found = tags.find(searchString.toLower().toStdString()) != std::string::npos;
+			if (found) {
+				it = i->find("video");
+				item->setData(Qt::StatusTipRole, QString::fromStdString(it->second));
+
+				it = i->find("name");
+				item->setData(Qt::DisplayRole, QString::fromStdString(it->second));
+
+				it = i->find("info");
+				item->setData(Qt::UserRole, QString::fromStdString(it->second));
+
+				it = i->find("tags");
+				if (QString::fromStdString(it->second).compare("0") != 0)
+					item->setData(Qt::ToolTipRole, QString::fromStdString(it->second));
+				else
+					item->setData(Qt::ToolTipRole, QString::fromStdString(""));
+
+				it = i->find("playlist");
+				item->setData(Qt::WhatsThisRole, QString::fromStdString(it->second));
+
+				it = i->find("thumbnail");
+				item->setIcon(QPixmap(QString::fromStdString(it->second)));
+
+				searchlist.append(item);
+			}
+		}
 	}
 
 	void VideoParser::editVideo(QString path, QString name, QString info, QString tags, QString playlist) {

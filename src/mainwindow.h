@@ -31,6 +31,8 @@
 
 #include "ui_mainwindow.h"
 
+#define ALL_VIDEOS "Your Library"
+
 class MainWindow : public QMainWindow
 {
 	Q_OBJECT
@@ -59,6 +61,7 @@ private slots:
 	void on_addPlaylistButton_clicked();
 	void on_deletePlaylistButton_clicked();
 	void handleSorting();
+	void handleSearch(QString searchString);
 	void playlistChanged(QListWidgetItem * item);
 	
 	void showVideoMenu(const QPoint& pos);
