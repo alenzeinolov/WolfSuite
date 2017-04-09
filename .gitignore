@@ -2,6 +2,8 @@
 # ignore bin folder
 [Bb]in/
 [Oo]bj/
+config
+playlist
 
 # [Visual Studio]
 ## Ignore Visual Studio temporary files, build results, and

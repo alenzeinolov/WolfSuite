@@ -13,12 +13,19 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
 	mainMenu = new QMenu(this);
 	videoMenu = new QMenu("Video Track", this);
+	aspectRatioMenu = new QMenu("Aspect Ratio", this);
 	audioMenu = new QMenu("Audio Track", this);
 	subtitlesMenu = new QMenu("Subtitles", this);
 
 	videoGroup = new QActionGroup(videoMenu);
+	aspectRatioGroup = new QActionGroup(aspectRatioMenu);
 	audioGroup = new QActionGroup(audioMenu);
 	subtitlesGroup = new QActionGroup(subtitlesMenu);
+
+	defaultAR = new QAction(tr("Default"), this);
+	firstAR = new QAction(tr("16:9"), this);
+	secondAR = new QAction(tr("16:10"), this);
+	thirdAR = new QAction(tr("4:3"), this);
 
 	allItem = new QListWidgetItem();
 	currentItem = new QString(qvariant_cast<QString>(allItem->data(Qt::DisplayRole)));
@@ -64,12 +71,33 @@ void MainWindow::init() {
 	ui.sortingBox->setCurrentIndex(0);
 
 	videoGroup->setExclusive(true);
+	aspectRatioGroup->setExclusive(true);
 	audioGroup->setExclusive(true);
 	subtitlesGroup->setExclusive(true);
 
 	mainMenu->addMenu(videoMenu);
+	mainMenu->addMenu(aspectRatioMenu);
 	mainMenu->addMenu(audioMenu);
 	mainMenu->addMenu(subtitlesMenu);
+
+	defaultAR->setCheckable(true);
+	firstAR->setCheckable(true);
+	secondAR->setCheckable(true);
+	thirdAR->setCheckable(true);
+
+	connect(defaultAR, &QAction::triggered, this, &MainWindow::changeAspectRatio);
+	connect(firstAR, &QAction::triggered, this, &MainWindow::changeAspectRatio);
+	connect(secondAR, &QAction::triggered, this, &MainWindow::changeAspectRatio);
+	connect(thirdAR, &QAction::triggered, this, &MainWindow::changeAspectRatio);
+
+	aspectRatioMenu->addAction(defaultAR);
+	aspectRatioGroup->addAction(defaultAR);
+	aspectRatioMenu->addAction(firstAR);
+	aspectRatioGroup->addAction(firstAR);
+	aspectRatioMenu->addAction(secondAR);
+	aspectRatioGroup->addAction(secondAR);
+	aspectRatioMenu->addAction(thirdAR);
+	aspectRatioGroup->addAction(thirdAR);
 
 	allItem->setData(Qt::DisplayRole, "Your Library");
 	allItem->setIcon(QPixmap(":/MainWindow/folder.png"));
@@ -120,6 +148,9 @@ void MainWindow::videoDoubleClicked(QListWidgetItem* item) {
 	ui.volume->setMediaPlayer(player->player);
 	ui.seek->setMediaPlayer(player->player);
 	ui.volume->setVolume(50);
+
+	defaultAR->setChecked(true);
+	defaultAR->setEnabled(true);
 
 	ui.playButton->setEnabled(true);
 }
@@ -304,6 +335,20 @@ void MainWindow::playlistChanged(QListWidgetItem* item) {
 	else
 		ui.deletePlaylistButton->setEnabled(true);
 	updateVideoList();
+}
+
+void MainWindow::changeAspectRatio() {
+	QList<QAction *> actions = aspectRatioGroup->actions();
+	for (auto a : actions) {
+		if (a->isChecked() && a->text().compare("Default") == 0)
+			ui.video->setAspectRatio(ui.video->defaultAspectRatio());
+		else if (a->isChecked() && a->text().compare("16:9") == 0)
+			ui.video->setAspectRatio(Vlc::Ratio::R_16_9);
+		else if (a->isChecked() && a->text().compare("16:10") == 0)
+			ui.video->setAspectRatio(Vlc::Ratio::R_16_10);
+		else if (a->isChecked() && a->text().compare("4:3") == 0)
+			ui.video->setAspectRatio(Vlc::Ratio::R_4_3);
+	}
 }
 
 void MainWindow::showVideoMenu(const QPoint& pos) {

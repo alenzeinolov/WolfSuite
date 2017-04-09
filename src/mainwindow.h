@@ -63,6 +63,7 @@ private slots:
 	void handleSorting();
 	void handleSearch(QString searchString);
 	void playlistChanged(QListWidgetItem * item);
+	void changeAspectRatio();
 	
 	void showVideoMenu(const QPoint& pos);
 	void updateMenus(QList<QAction *> actions, const Vlc::ActionsType type);
@@ -71,8 +72,9 @@ private:
 
 	bool fullscreen, maximized;
 
-	QMenu *mainMenu, *videoMenu, *audioMenu, *subtitlesMenu;
-	QActionGroup *audioGroup, *subtitlesGroup, *videoGroup;
+	QMenu *mainMenu, *videoMenu, *aspectRatioMenu, *audioMenu, *subtitlesMenu;
+	QActionGroup *videoGroup, *aspectRatioGroup, *audioGroup, *subtitlesGroup;
+	QAction *defaultAR, *firstAR, *secondAR, *thirdAR;
 
 	QListWidgetItem *allItem;
 	QString *currentItem;

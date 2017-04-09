@@ -55,7 +55,7 @@ namespace wolfsuite {
 		swsContext = sws_getContext(codecContext->width, codecContext->height, codecContext->pix_fmt, codecContext->width, codecContext->height, AV_PIX_FMT_RGB24, SWS_BICUBIC, NULL, NULL, NULL);
 
 		int64_t duration = (formatContext->duration / AV_TIME_BASE) * 0.25;
-		int64_t seekTime = (duration * (codecContext->time_base.den)) / (codecContext->time_base.num);
+		int seekTime = (duration * (formatContext->streams[videoStream]->time_base.den)) / (formatContext->streams[videoStream]->time_base.num);
 		int64_t timeBase = (int64_t(codecContext->time_base.num) * AV_TIME_BASE) / int64_t(codecContext->time_base.den);
 		if (av_seek_frame(formatContext, videoStream, seekTime, AVSEEK_FLAG_ANY) < 0)
 			return false;
