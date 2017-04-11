@@ -177,10 +177,10 @@ namespace wolfsuite {
 					ofile << "name:" << name.toStdString() << std::endl;
 				else
 					ofile << "name:" << "No name" << std::endl;
-				if (info.compare("") != 0)
+				if (info.compare("No info") != 0)
 					ofile << "info:" << info.toStdString() << std::endl;
 				else
-					ofile << "info:" << "No info" << std::endl;
+					ofile << "info:" << "0" << std::endl;
 				if (tags.compare("") != 0)
 					ofile << "tags:" << tags.toStdString() << std::endl;
 				else

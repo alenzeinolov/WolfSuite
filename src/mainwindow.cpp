@@ -179,6 +179,21 @@ void MainWindow::on_stopButton_clicked() {
 	player->player->stop();
 }
 
+void MainWindow::on_decSpeedButton_clicked() {
+	if (player->player->playbackRate() != 0.25)
+		player->player->setPlaybackRate(player->player->playbackRate() / 2);
+}
+
+void MainWindow::on_incSpeedButton_clicked() {
+	if (player->player->playbackRate() != 4)
+		player->player->setPlaybackRate(player->player->playbackRate() * 2);
+}
+
+void MainWindow::on_stepButton_clicked() {
+	if ((player->player->time() + 60000) < player->player->length())
+		player->player->setTime(player->player->time() + 60000);
+}
+
 void MainWindow::on_volumeMuteButton_clicked() {
 	if (ui.volume->mute())
 		ui.volume->setMute(false);
@@ -223,14 +238,15 @@ void MainWindow::on_refreshButton_clicked() {
 }
 
 void MainWindow::on_addButton_clicked() {
-	QStringList filename = QFileDialog::getOpenFileNames(this, tr("Add videos to library"), "", tr("Video files (*.mkv *.mp4 *.avi)"));
+	QStringList filename = QFileDialog::getOpenFileNames(this, tr("Add video(s) to your library"), "", tr("Video files (*.mkv *.mp4 *.avi)"));
 
 	if (filename.count() == 0)
 		return;
 
 	wolfsuite::CopyFile* cf = new wolfsuite::CopyFile(filename, QString::fromStdString(config->config.find("libraryfolder")->second) + "/");
-	QProgressDialog* progress = new QProgressDialog();
-	progress->setWindowTitle("Adding " + QString::number(cf->copyList.count()) + " files");
+	QProgressDialog* progress = new QProgressDialog(this);
+	progress->setWindowTitle("Adding " + QString::number(cf->copyList.count()) + " file(s)");
+	progress->resize(progress->size() + QSize(40, 0));
 	progress->setMinimum(0);
 	progress->setMaximum(cf->copyList.count());
 	progress->setValue(0);
@@ -246,7 +262,7 @@ void MainWindow::on_addButton_clicked() {
 
 void MainWindow::on_deleteButton_clicked() {
 	if (ui.videoList->currentItem() != NULL) {
-		QMessageBox msgBox;
+		QMessageBox msgBox(this);
 		msgBox.setWindowTitle("Delete File");
 		msgBox.setText("Are you sure you want to delete " + ui.videoList->currentItem()->data(Qt::DisplayRole).toString() + "?");
 		msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::Cancel);
@@ -256,6 +272,8 @@ void MainWindow::on_deleteButton_clicked() {
 			wolfsuite::RemoveFile* rf = new wolfsuite::RemoveFile(ui.videoList->currentItem()->data(Qt::StatusTipRole).toString());
 			QMessageBox* loadingBox = new QMessageBox();
 			loadingBox->setWindowTitle("Deleting file");
+			loadingBox->setWindowFlags(Qt::Dialog);
+			loadingBox->setWindowIcon(QIcon(":/MainWindow/wolf.png"));
 			loadingBox->setText("Deleting file " + ui.videoList->currentItem()->data(Qt::DisplayRole).toString());
 			loadingBox->setStandardButtons(0);
 
@@ -294,7 +312,7 @@ void MainWindow::on_addPlaylistButton_clicked() {
 
 void MainWindow::on_deletePlaylistButton_clicked() {
 	if (ui.playlistList->currentItem() != NULL) {
-		QMessageBox msgBox;
+		QMessageBox msgBox(this);
 		msgBox.setWindowTitle("Delete File");
 		msgBox.setText("Are you sure you want to delete " + ui.playlistList->currentItem()->data(Qt::DisplayRole).toString() + "?");
 		msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::Cancel);

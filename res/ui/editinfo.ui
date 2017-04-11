@@ -13,6 +13,10 @@
   <property name="windowTitle">
    <string>EditInfo</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="mainwindow.qrc">
+    <normaloff>:/MainWindow/wolf.png</normaloff>:/MainWindow/wolf.png</iconset>
+  </property>
   <layout class="QFormLayout" name="formLayout">
    <item row="0" column="0" colspan="2">
     <widget class="QLabel" name="thumbnail">

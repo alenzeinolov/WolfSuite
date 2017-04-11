@@ -49,6 +49,9 @@ private slots:
 	void on_playButton_clicked();
 	void on_pauseButton_clicked();
 	void on_stopButton_clicked();
+	void on_decSpeedButton_clicked();
+	void on_incSpeedButton_clicked();
+	void on_stepButton_clicked();
 	void on_volumeMuteButton_clicked();
 	void on_volumeDownButton_clicked();
 	void on_volumeUpButton_clicked();

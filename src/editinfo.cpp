@@ -23,7 +23,10 @@ void EditInfo::init() {
 
 	ui.thumbnail->setPixmap(item->icon().pixmap(item->icon().actualSize(QSize(320, 180))));
 	ui.nameEdit->setText(qvariant_cast<QString>(item->data(Qt::DisplayRole)));
-	ui.infoEdit->setText(qvariant_cast<QString>(item->data(Qt::UserRole)));
+	if (qvariant_cast<QString>(item->data(Qt::UserRole)).compare("0") == 0)
+		ui.infoEdit->setText("No info");
+	else
+		ui.infoEdit->setText(qvariant_cast<QString>(item->data(Qt::UserRole)));
 	ui.tagsEdit->setText(qvariant_cast<QString>(item->data(Qt::ToolTipRole)));
 	ui.playlistEdit->addItem("None");
 	for (int i = 0; i < config->playlists.length(); ++i)
