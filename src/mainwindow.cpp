@@ -13,19 +13,26 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
 	mainMenu = new QMenu(this);
 	videoMenu = new QMenu("Video Track", this);
-	aspectRatioMenu = new QMenu("Aspect Ratio", this);
 	audioMenu = new QMenu("Audio Track", this);
+	aspectRatioMenu = new QMenu("Aspect Ratio", this);
+	cropRatioMenu = new QMenu("Crop Ratio", this);
 	subtitlesMenu = new QMenu("Subtitles", this);
 
 	videoGroup = new QActionGroup(videoMenu);
-	aspectRatioGroup = new QActionGroup(aspectRatioMenu);
 	audioGroup = new QActionGroup(audioMenu);
+	aspectRatioGroup = new QActionGroup(aspectRatioMenu);
+	cropRatioGroup = new QActionGroup(aspectRatioMenu);
 	subtitlesGroup = new QActionGroup(subtitlesMenu);
 
 	defaultAR = new QAction(tr("Default"), this);
 	firstAR = new QAction(tr("16:9"), this);
 	secondAR = new QAction(tr("16:10"), this);
 	thirdAR = new QAction(tr("4:3"), this);
+
+	defaultCR = new QAction(tr("Default"), this);
+	firstCR = new QAction(tr("16:9"), this);
+	secondCR = new QAction(tr("16:10"), this);
+	thirdCR = new QAction(tr("4:3"), this);
 
 	allItem = new QListWidgetItem();
 	currentItem = new QString(qvariant_cast<QString>(allItem->data(Qt::DisplayRole)));
@@ -46,10 +53,8 @@ MainWindow::~MainWindow() {
 
 void MainWindow::init() {
 	ui.video->installEventFilter(this);
-	
-	ui.videoList->setItemDelegate(new VideoListDelegate());
-
 	ui.video->setMouseTracking(true);
+	ui.videoList->setItemDelegate(new VideoListDelegate());
 
 	ui.playlistList->setFrameShape(QFrame::NoFrame);
 	ui.videoList->setIconSize(QSize(160, 90));
@@ -71,13 +76,15 @@ void MainWindow::init() {
 	ui.sortingBox->setCurrentIndex(0);
 
 	videoGroup->setExclusive(true);
-	aspectRatioGroup->setExclusive(true);
 	audioGroup->setExclusive(true);
+	aspectRatioGroup->setExclusive(true);
+	cropRatioGroup->setExclusive(true);
 	subtitlesGroup->setExclusive(true);
 
 	mainMenu->addMenu(videoMenu);
-	mainMenu->addMenu(aspectRatioMenu);
 	mainMenu->addMenu(audioMenu);
+	mainMenu->addMenu(aspectRatioMenu);
+	mainMenu->addMenu(cropRatioMenu);
 	mainMenu->addMenu(subtitlesMenu);
 
 	defaultAR->setCheckable(true);
@@ -85,10 +92,20 @@ void MainWindow::init() {
 	secondAR->setCheckable(true);
 	thirdAR->setCheckable(true);
 
+	defaultCR->setCheckable(true);
+	firstCR->setCheckable(true);
+	secondCR->setCheckable(true);
+	thirdCR->setCheckable(true);
+
 	connect(defaultAR, &QAction::triggered, this, &MainWindow::changeAspectRatio);
 	connect(firstAR, &QAction::triggered, this, &MainWindow::changeAspectRatio);
 	connect(secondAR, &QAction::triggered, this, &MainWindow::changeAspectRatio);
 	connect(thirdAR, &QAction::triggered, this, &MainWindow::changeAspectRatio);
+
+	connect(defaultCR, &QAction::triggered, this, &MainWindow::changeCropRatio);
+	connect(firstCR, &QAction::triggered, this, &MainWindow::changeCropRatio);
+	connect(secondCR, &QAction::triggered, this, &MainWindow::changeCropRatio);
+	connect(thirdCR, &QAction::triggered, this, &MainWindow::changeCropRatio);
 
 	aspectRatioMenu->addAction(defaultAR);
 	aspectRatioGroup->addAction(defaultAR);
@@ -98,6 +115,15 @@ void MainWindow::init() {
 	aspectRatioGroup->addAction(secondAR);
 	aspectRatioMenu->addAction(thirdAR);
 	aspectRatioGroup->addAction(thirdAR);
+
+	cropRatioMenu->addAction(defaultCR);
+	cropRatioGroup->addAction(defaultCR);
+	cropRatioMenu->addAction(firstCR);
+	cropRatioGroup->addAction(firstCR);
+	cropRatioMenu->addAction(secondCR);
+	cropRatioGroup->addAction(secondCR);
+	cropRatioMenu->addAction(thirdCR);
+	cropRatioGroup->addAction(thirdCR);
 
 	allItem->setData(Qt::DisplayRole, "Your Library");
 	allItem->setIcon(QPixmap(":/MainWindow/folder.png"));
@@ -116,8 +142,8 @@ void MainWindow::init() {
 
 void MainWindow::setupConfig() {
 	if (!config->configExists()) {
-		QFileDialog *dialog = new QFileDialog();
-		dialog->setFileMode(QFileDialog::Directory);
+		QFileDialog *dialog = new QFileDialog(this);
+		dialog->setWindowIconText("Select your library folder");
 		QString dir = dialog->getExistingDirectory();
 		config->createConfig(dir.toStdString());
 		delete dialog;
@@ -152,7 +178,11 @@ void MainWindow::videoDoubleClicked(QListWidgetItem* item) {
 	defaultAR->setChecked(true);
 	defaultAR->setEnabled(true);
 
+	defaultCR->setChecked(true);
+	defaultCR->setEnabled(true);
+
 	ui.playButton->setEnabled(true);
+	ui.playButton->click();
 }
 
 void MainWindow::on_playButton_clicked() {
@@ -190,23 +220,34 @@ void MainWindow::on_incSpeedButton_clicked() {
 }
 
 void MainWindow::on_stepButton_clicked() {
-	if ((player->player->time() + 60000) < player->player->length())
-		player->player->setTime(player->player->time() + 60000);
+	if ((player->player->time() + 30000) < player->player->length())
+		player->player->setTime(player->player->time() + 30000);
 }
 
 void MainWindow::on_volumeMuteButton_clicked() {
-	if (ui.volume->mute())
+	if (ui.volume->mute()) {
+		ui.volumeDownButton->setEnabled(true);
+		ui.volumeUpButton->setEnabled(true);
 		ui.volume->setMute(false);
-	else
+	} else {
+		ui.volumeDownButton->setEnabled(false);
+		ui.volumeUpButton->setEnabled(false);
 		ui.volume->setMute(true);
+	}
 }
 
 void MainWindow::on_volumeDownButton_clicked() {
-	ui.volume->volumeDown();
+	if ((ui.volume->volume() - 10) < 0)
+		ui.volume->setVolume(0);
+	else
+		ui.volume->setVolume(ui.volume->volume() - 10);
 }
 
 void MainWindow::on_volumeUpButton_clicked() {
-	ui.volume->volumeUp();
+	if ((ui.volume->volume() + 10) > 200)
+		ui.volume->setVolume(200);
+	else
+		ui.volume->setVolume(ui.volume->volume() + 10);
 }
 
 void MainWindow::on_fullscreenButton_clicked() {
@@ -244,7 +285,7 @@ void MainWindow::on_addButton_clicked() {
 		return;
 
 	wolfsuite::CopyFile* cf = new wolfsuite::CopyFile(filename, QString::fromStdString(config->config.find("libraryfolder")->second) + "/");
-	QProgressDialog* progress = new QProgressDialog(this);
+	QProgressDialog* progress = new QProgressDialog(this, Qt::WindowSystemMenuHint | Qt::WindowTitleHint);
 	progress->setWindowTitle("Adding " + QString::number(cf->copyList.count()) + " file(s)");
 	progress->resize(progress->size() + QSize(40, 0));
 	progress->setMinimum(0);
@@ -366,6 +407,20 @@ void MainWindow::changeAspectRatio() {
 			ui.video->setAspectRatio(Vlc::Ratio::R_16_10);
 		else if (a->isChecked() && a->text().compare("4:3") == 0)
 			ui.video->setAspectRatio(Vlc::Ratio::R_4_3);
+	}
+}
+
+void MainWindow::changeCropRatio() {
+	QList<QAction *> actions = cropRatioGroup->actions();
+	for (auto a : actions) {
+		if (a->isChecked() && a->text().compare("Default") == 0)
+			ui.video->setCropRatio(ui.video->defaultCropRatio());
+		else if (a->isChecked() && a->text().compare("16:9") == 0)
+			ui.video->setCropRatio(Vlc::Ratio::R_16_9);
+		else if (a->isChecked() && a->text().compare("16:10") == 0)
+			ui.video->setCropRatio(Vlc::Ratio::R_16_10);
+		else if (a->isChecked() && a->text().compare("4:3") == 0)
+			ui.video->setCropRatio(Vlc::Ratio::R_4_3);
 	}
 }
 

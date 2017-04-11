@@ -116,7 +116,6 @@
     <ClCompile Include="src\player.cpp" />
     <ClCompile Include="src\removefile.cpp" />
     <ClCompile Include="src\thumbnailcreator.cpp" />
-    <ClCompile Include="src\utility.cpp" />
     <ClCompile Include="src\videolistdelegate.cpp" />
     <ClCompile Include="src\videoparser.cpp" />
   </ItemGroup>
@@ -193,7 +192,6 @@
     </CustomBuild>
     <ClInclude Include="src\config.h" />
     <ClInclude Include="src\thumbnailcreator.h" />
-    <ClInclude Include="src\utility.h" />
     <CustomBuild Include="src\videolistdelegate.h">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Moc%27ing videolistdelegate.h...</Message>
