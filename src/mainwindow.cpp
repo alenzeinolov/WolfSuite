@@ -279,7 +279,7 @@ void MainWindow::on_refreshButton_clicked() {
 }
 
 void MainWindow::on_addButton_clicked() {
-	QStringList filename = QFileDialog::getOpenFileNames(this, tr("Add video(s) to your library"), "", tr("Video files (*.mkv *.mp4 *.avi)"));
+	QStringList filename = QFileDialog::getOpenFileNames(this, tr("Add video(s) to your library"), "", tr("Video files (*.mkv *.mov *.wmv *.flv *.mp4 *.avi)"));
 
 	if (filename.count() == 0)
 		return;

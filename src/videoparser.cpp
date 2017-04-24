@@ -9,6 +9,9 @@ namespace wolfsuite {
 
 		// TODO: ADD MORE FORMATS
 		supportedFormats.insert("mkv");
+		supportedFormats.insert("mov");
+		supportedFormats.insert("wmv");
+		supportedFormats.insert("flv");
 		supportedFormats.insert("mp4");
 		supportedFormats.insert("avi");
 	}
@@ -193,9 +196,11 @@ namespace wolfsuite {
 					std::getline(ifile, line);
 				ofile << line << std::endl;
 				std::getline(ifile, line);
-				ofile << line << std::endl;
+				if (line.length() != 0)
+					ofile << line << std::endl;
 			} else {
-				ofile << line << std::endl;
+				if (line.length() != 0)
+					ofile << line << std::endl;
 			}
 		}
 
@@ -216,7 +221,8 @@ namespace wolfsuite {
 				for (int i = 0; i < 5; ++i)
 					std::getline(ifile, line);
 			} else {
-				ofile << line << std::endl;
+				if (line.length() != 0)
+					ofile << line << std::endl;
 			}
 		}
 

@@ -63,9 +63,11 @@ namespace wolfsuite {
 	}
 
 	void Config::addPlaylist(QString playlist) {
-		if (!playlistExists(playlist)) {
-			std::ofstream file(PLAYLIST_FILE_NAME, std::ios::app);
-			file << playlist.toStdString() << std::endl;
+		if (playlist.length() != 0) {
+			if (!playlistExists(playlist)) {
+				std::ofstream file(PLAYLIST_FILE_NAME, std::ios::app);
+				file << playlist.toStdString() << std::endl;
+			}
 		}
 	}
 
